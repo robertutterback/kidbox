@@ -1,0 +1,9 @@
+10 CLS
+20 PRINT "HELLO!"
+30 PRINT
+40 PRINT "Type:"
+50 PRINT "  10 PRINT ""HI"""
+60 PRINT "  RUN"
+70 PRINT
+80 PRINT "Press Ctrl+Break to stop."
+90 GOTO 90

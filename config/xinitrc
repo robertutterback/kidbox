@@ -1,0 +1,22 @@
+#!/bin/sh
+set -eu
+
+# Keep screen from blanking (kids hate "it turned off")
+xset -dpms
+xset s off
+xset s noblank
+
+# Hide cursor after a few seconds
+unclutter -idle 3 &
+
+# Minimal window manager (no taskbar/panel)
+matchbox-window-manager -use_titlebar no -use_lowlight &
+
+# Run selected app (from run-x.sh)
+if [ -n "${KID_APP:-}" ]; then
+  # shellcheck disable=SC2086
+  exec "$KID_APP" ${KID_ARGS:-}
+fi
+
+# Fallback
+exec xterm

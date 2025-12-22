@@ -1,0 +1,16 @@
+; Welcome to Logo!
+; Try these:
+;   FD 50
+;   RT 90
+;   REPEAT 4 [FD 50 RT 90]
+
+to square :n
+  repeat 4 [fd :n rt 90]
+end
+
+to house :n
+  square :n
+  rt 30
+  repeat 3 [fd :n rt 120]
+  lt 30
+end
