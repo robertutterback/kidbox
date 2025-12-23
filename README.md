@@ -60,7 +60,15 @@ cd doc
 make
 ```
 
-You can print out `doc/kidbook-booklet.pdf` to make a little booklet.
+## Printing the Booklet
+
+The `doc/kidbook-booklet.pdf` is pre-imposed for booklet printing:
+
+1. Print **duplex** (double-sided) with **long-edge binding** (flip on long edge)
+2. Fold the printed stack in half **horizontally** (bring top edge to bottom edge)
+3. Staple along the center fold
+
+The pages are already arranged in the correct order for this to work.
 
 ## Timer Sounds
 

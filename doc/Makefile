@@ -20,7 +20,7 @@ $(PDF): $(TEX).tex
 
 # Requires pdfjam (TeX Live extra utils on many distros)
 booklet: pdf
-	pdfjam --booklet true --paper letterpaper $(PDF) -o $(BOOKLET)
+	pdfjam --booklet true --landscape --paper letterpaper $(PDF) -o $(BOOKLET)
 
 clean:
 	rm -f *.aux *.log *.out *.toc *.lof *.lot *.fls *.fdb_latexmk *.synctex.gz
