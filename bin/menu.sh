@@ -16,6 +16,7 @@ PENNY_FILE="$KIDBOX_DIR/typing/penny.txt"
 LOGO_WELCOME="$KIDBOX_DIR/logo/welcome.lg"
 CLOCK_SCRIPT="$HOME/bin/clock.sh"
 TIMER_SCRIPT="$HOME/bin/timer.sh"
+STOPWATCH_SCRIPT="$HOME/bin/stopwatch.sh"
 BOOK_PDF="$KIDBOX_DIR/kidbook.pdf"
 
 while true; do
@@ -29,7 +30,8 @@ while true; do
         5 "Write BASIC Programs" \
         6 "Clock" \
         7 "Timer" \
-        8 "Read the Book" \
+        8 "Stopwatch" \
+        9 "Read the Book" \
       3>&1 1>&2 2>&3
   ) || {
     # Esc / Cancel: just re-show the menu
@@ -56,6 +58,7 @@ while true; do
       ;;
     6) "$RUNX" "$CLOCK_SCRIPT" ;;
     7) "$RUNX" "$TIMER_SCRIPT" ;;
-    8) "$RUNX" xpdf "$BOOK_PDF" ;;
+    8) "$RUNX" "$STOPWATCH_SCRIPT" ;;
+    9) "$RUNX" evince "$BOOK_PDF" ;;
   esac
 done
