@@ -161,9 +161,3 @@ echo "[kidbox] Fixing ownership..."
 chown -R "$KID_USER":"$KID_USER" "$KID_HOME/.xinitrc" "$KID_BIN_DIR" "$KIDBOX_DIR" "$BASH_PROFILE"
 
 echo "[kidbox] Done."
-echo
-echo "Next steps:"
-echo "  1) Enable console autologin: sudo raspi-config"
-echo "  2) Reboot: sudo reboot"
-echo
-echo "Tip: update later with: git pull && sudo ./install.sh"
