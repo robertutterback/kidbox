@@ -8,6 +8,10 @@ set -euo pipefail
 
 #trap '' INT
 
+# Set volume to 100% at startup
+amixer -q sset Master 100% unmute 2>/dev/null || true
+amixer -q sset PCM 100% unmute 2>/dev/null || true
+
 KIDBOX_DIR="$HOME/kidbox"
 LOG_DIR="$HOME/.kidbox-logs"
 mkdir -p "$LOG_DIR"
