@@ -1,0 +1,4 @@
+# Exit the current X session and return to the kid menu
+# Ctrl + Alt + Backspace
+"pkill -TERM Xorg"
+  control+alt + BackSpace

@@ -12,6 +12,8 @@ unclutter -idle 3 &
 # Minimal window manager (no taskbar/panel)
 matchbox-window-manager -use_titlebar no -use_lowlight -use_fullscreen &
 
+xbindkeys &
+
 # Run selected app (from run-x.sh)
 if [ -n "${KID_APP:-}" ]; then
   # shellcheck disable=SC2086

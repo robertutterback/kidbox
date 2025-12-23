@@ -52,6 +52,7 @@ APT_PACKAGES=(
   matchbox-window-manager
   unclutter
   whiptail
+  xbindkeys
 )
 
 echo "[kidbox] Installing packages..."
@@ -79,6 +80,12 @@ install -m 0755 "$REPO_ROOT/bin/runx.sh"    "$KID_BIN_DIR/runx.sh"
 # -------------------------------
 echo "[kidbox] Installing .xinitrc..."
 install -m 0755 "$REPO_ROOT/config/xinitrc" "$KID_HOME/.xinitrc"
+
+# -------------------------------
+# Install .xbindkeysrc
+# -------------------------------
+echo "[kidbox] Installing .xbindkeysrc..."
+install -m 0755 "$REPO_ROOT/config/xbindkeysrc" "$KID_HOME/.xbindkeysrc"
 
 # -------------------------------
 # Install content (do not clobber if already modified)
