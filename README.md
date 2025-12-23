@@ -13,6 +13,7 @@ MVP Activities:
 - Drawing: Tux Paint
 - Clock: Analog (xclock) + Digital (tty-clock)
 - Timer: Visual countdown with sound
+- Book: View the instruction book (xpdf)
 
 Intentionally simple and explicit. The idea is that the only way to
 use such a computer is to start understanding how it works.
@@ -46,6 +47,19 @@ ExecStart=-/sbin/agetty --autologin <kiduser> --noclear %I $TERM
 git pull
 sudo ./install.sh
 ```
+
+## Building the Book
+
+If you need to rebuild the instruction book (`doc/kidbook.tex`), I
+recommend doing it on a normal development machine, unless you really
+want to install texlive on your Pi.
+
+```bash
+cd doc
+make
+```
+
+You can print out `doc/kidbook-booklet.pdf` to make a little booklet.
 
 ## Notes
 

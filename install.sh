@@ -58,6 +58,7 @@ APT_PACKAGES=(
   zenity
   xterm
   alsa-utils
+  xpdf
 )
 
 echo "[kidbox] Installing packages..."
@@ -110,9 +111,14 @@ for f in "$REPO_ROOT/content/typing/"*.txt; do
   fi
 done
 
-# BASIC + Logo: copy "example" files; safe to overwrite (they’re templates)
+# BASIC + Logo: copy "example" files; safe to overwrite (they're templates)
 install -m 0644 "$REPO_ROOT/content/basic/HELLO.BAS" "$KIDBOX_DIR/basic/HELLO.BAS"
 install -m 0644 "$REPO_ROOT/content/logo/welcome.lg" "$KIDBOX_DIR/logo/welcome.lg"
+
+# Book PDF: copy if exists
+if [[ -f "$REPO_ROOT/doc/kidbook.pdf" ]]; then
+  install -m 0644 "$REPO_ROOT/doc/kidbook.pdf" "$KIDBOX_DIR/kidbook.pdf"
+fi
 
 # -------------------------------
 # Wire menu autostart via .bash_profile snippet
