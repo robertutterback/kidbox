@@ -26,7 +26,8 @@ sudo ./install.sh
 
 ```
 sudo raspi-config
-# System Options -> Boot / Auto Login -> Console AutoLogin
+# System Options -> Boot -> Console Text console
+# System Options -> Auto Login -> yes
 ```
 
 ## Update
