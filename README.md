@@ -9,10 +9,11 @@ A locked-down, retro-style kid computer setup for Raspberry Pi:
 MVP Activities:
 - Logo: UCBLogo
 - BASIC: PC-BASIC (GW-BASIC-like)
-- Typing (w/ color color): Leafpad
+- Typing: Leafpad (separate files for Sally & Penny)
 - Drawing: Tux Paint
-- Clock: Analog (xclock) + Digital (tty-clock)
-- Timer: Visual countdown with sound
+- Clock: Custom HTML/CSS/JS analog + digital (Chromium kiosk mode)
+- Timer: Visual countdown with looping background music and alarm
+- Stopwatch: Count-up timer
 - Book: View the instruction book (evince)
 
 Intentionally simple and explicit. The idea is that the only way to
