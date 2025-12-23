@@ -23,7 +23,7 @@ xterm -maximized -fa 'Monospace' -fs 48 -e bash -c "
   TIMER_SOUND=\"\$HOME/kidbox/timer.mp3\"
   MUSIC_PID=\"\"
   if [ -f \"\$TIMER_SOUND\" ] && command -v mpg123 >/dev/null 2>&1; then
-    mpg123 -q -l 0 \"\$TIMER_SOUND\" >/dev/null 2>&1 &
+    mpg123 -q -l -1 \"\$TIMER_SOUND\" >/dev/null 2>&1 &
     MUSIC_PID=\$!
   fi
 
@@ -52,27 +52,38 @@ xterm -maximized -fa 'Monospace' -fs 48 -e bash -c "
   echo
   echo
 
-  # Play alarm sound (try custom sound first, then fallback)
+  # Stop timer music
+  kill \$MUSIC_PID 2>/dev/null || true
+
+  # Play alarm sound (looping)
   ALARM_SOUND=\"\$HOME/kidbox/alarm.mp3\"
+  ALARM_PID=\"\"
   if [ -f \"\$ALARM_SOUND\" ] && command -v mpg123 >/dev/null 2>&1; then
-    mpg123 -q -l 0 \"\$ALARM_SOUND\" &
+    mpg123 -q -l -1 \"\$ALARM_SOUND\" >/dev/null 2>&1 &
+    ALARM_PID=\$!
   elif [ -f \"\$ALARM_SOUND\" ] && command -v ffplay >/dev/null 2>&1; then
-    ffplay -nodisp -loop 0 -v quiet \"\$ALARM_SOUND\" &
+    ffplay -nodisp -loop 0 -v quiet \"\$ALARM_SOUND\" >/dev/null 2>&1 &
+    ALARM_PID=\$!
   else
-    # Fallback: system sounds or beep
-    for wav in /usr/share/sounds/alsa/Front_Center.wav /usr/share/sounds/alsa/Noise.wav; do
-      if [ -f \"\$wav\" ]; then
-        aplay \"\$wav\" >/dev/null 2>&1 || true
-        aplay \"\$wav\" >/dev/null 2>&1 || true
-        break
-      fi
-    done
-    printf '\a\a\a'
+    # Fallback: loop system beep
+    while true; do
+      for wav in /usr/share/sounds/alsa/Front_Center.wav /usr/share/sounds/alsa/Noise.wav; do
+        if [ -f \"\$wav\" ]; then
+          aplay \"\$wav\" >/dev/null 2>&1 || true
+          sleep 1
+          break 2
+        fi
+      done
+      printf '\a'
+      sleep 1
+    done &
+    ALARM_PID=\$!
   fi
 
-  # Visual popup notification
+  # Visual popup notification (non-blocking)
   zenity --info --title='Timer' --text='⏰ TIME'"'"'S UP! ⏰' --width=300 &
 
-  # Wait a bit for sound to finish
-  sleep 3
+  # Keep alarm running until user exits with Ctrl+Alt+Backspace
+  echo '   Press Ctrl+Alt+Backspace to stop alarm.'
+  wait \$ALARM_PID 2>/dev/null || true
 "
