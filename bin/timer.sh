@@ -18,6 +18,18 @@ secs=$((mins * 60))
 # Show countdown in a large xterm window
 xterm -maximized -fa 'Monospace' -fs 48 -e bash -c "
   secs=$secs
+
+  # Start background timer music if available
+  TIMER_SOUND=\"\$HOME/kidbox/timer.mp3\"
+  MUSIC_PID=\"\"
+  if [ -f \"\$TIMER_SOUND\" ] && command -v mpg123 >/dev/null 2>&1; then
+    mpg123 -q -l 0 \"\$TIMER_SOUND\" >/dev/null 2>&1 &
+    MUSIC_PID=\$!
+  fi
+
+  # Trap to clean up music on exit
+  trap \"kill \$MUSIC_PID 2>/dev/null || true\" EXIT
+
   while [ \$secs -ge 0 ]; do
     clear
     echo
@@ -32,17 +44,35 @@ xterm -maximized -fa 'Monospace' -fs 48 -e bash -c "
     secs=\$((secs - 1))
   done
 
-  # Alarm sound (pick one that exists on Pi OS)
-  for wav in /usr/share/sounds/alsa/Front_Center.wav /usr/share/sounds/alsa/Noise.wav; do
-    if [ -f \"\$wav\" ]; then
-      aplay \"\$wav\" >/dev/null 2>&1 || true
-      aplay \"\$wav\" >/dev/null 2>&1 || true
-      sleep 2
-      exit 0
-    fi
-  done
+  # Clear screen and show TIME'S UP! message
+  clear
+  echo
+  echo
+  echo '   ⏰  TIME'"'"'S UP!  ⏰'
+  echo
+  echo
 
-  # Fallback: terminal bell
-  printf '\a\a\a'
-  sleep 2
+  # Play alarm sound (try custom sound first, then fallback)
+  ALARM_SOUND=\"\$HOME/kidbox/alarm.mp3\"
+  if [ -f \"\$ALARM_SOUND\" ] && command -v mpg123 >/dev/null 2>&1; then
+    mpg123 -q -l 0 \"\$ALARM_SOUND\" &
+  elif [ -f \"\$ALARM_SOUND\" ] && command -v ffplay >/dev/null 2>&1; then
+    ffplay -nodisp -loop 0 -v quiet \"\$ALARM_SOUND\" &
+  else
+    # Fallback: system sounds or beep
+    for wav in /usr/share/sounds/alsa/Front_Center.wav /usr/share/sounds/alsa/Noise.wav; do
+      if [ -f \"\$wav\" ]; then
+        aplay \"\$wav\" >/dev/null 2>&1 || true
+        aplay \"\$wav\" >/dev/null 2>&1 || true
+        break
+      fi
+    done
+    printf '\a\a\a'
+  fi
+
+  # Visual popup notification
+  zenity --info --title='Timer' --text='⏰ TIME'"'"'S UP! ⏰' --width=300 &
+
+  # Wait a bit for sound to finish
+  sleep 3
 "
