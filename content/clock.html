@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Clock</title>
+  <style>
+    body {
+      background: black;
+      color: cyan;
+      font-family: monospace;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+    #analog {
+      border: 3px solid cyan;
+      border-radius: 50%;
+    }
+    #digital {
+      font-size: 72px;
+      text-align: center;
+    }
+    .time {
+      font-size: 120px;
+      margin: 40px;
+      font-weight: bold;
+    }
+    .date {
+      font-size: 48px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="analog" width="700" height="700"></canvas>
+  <div id="digital">
+    <div class="time" id="time"></div>
+    <div class="date" id="date"></div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('analog');
+    const ctx = canvas.getContext('2d');
+    const radius = canvas.width / 2;
+
+    function drawClock() {
+      const now = new Date();
+
+      // Update digital display
+      const hours = now.getHours() % 12 || 12;
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+      document.getElementById('time').textContent = `${hours}:${minutes}:${seconds} ${ampm}`;
+
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const months = ['January', 'February', 'March', 'April', 'May', 'June',
+                      'July', 'August', 'September', 'October', 'November', 'December'];
+      document.getElementById('date').textContent =
+        `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.translate(radius, radius);
+
+      // Draw clock face
+      ctx.fillStyle = 'black';
+      ctx.beginPath();
+      ctx.arc(0, 0, radius - 10, 0, 2 * Math.PI);
+      ctx.fill();
+
+      // Draw hour numbers
+      ctx.font = '40px monospace';
+      ctx.fillStyle = 'cyan';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      for (let num = 1; num <= 12; num++) {
+        const ang = num * Math.PI / 6;
+        const x = (radius - 60) * Math.sin(ang);
+        const y = -(radius - 60) * Math.cos(ang);
+        ctx.fillText(num.toString(), x, y);
+      }
+
+      // Draw hour hand
+      const hour = now.getHours() % 12 + now.getMinutes() / 60;
+      drawHand(hour * Math.PI / 6, radius * 0.5, 8, 'cyan');
+
+      // Draw minute hand
+      const minute = now.getMinutes() + now.getSeconds() / 60;
+      drawHand(minute * Math.PI / 30, radius * 0.7, 6, 'cyan');
+
+      // Draw second hand
+      const second = now.getSeconds();
+      drawHand(second * Math.PI / 30, radius * 0.8, 2, 'red');
+
+      // Draw center dot
+      ctx.beginPath();
+      ctx.arc(0, 0, 10, 0, 2 * Math.PI);
+      ctx.fillStyle = 'cyan';
+      ctx.fill();
+
+      ctx.translate(-radius, -radius);
+    }
+
+    function drawHand(angle, length, width, color) {
+      ctx.beginPath();
+      ctx.lineWidth = width;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = color;
+      ctx.moveTo(0, 0);
+      ctx.lineTo(length * Math.sin(angle), -length * Math.cos(angle));
+      ctx.stroke();
+    }
+
+    // Update every second
+    setInterval(drawClock, 1000);
+    drawClock();
+  </script>
+</body>
+</html>
