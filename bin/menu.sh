@@ -34,20 +34,7 @@ while true; do
     1) "$RUNX" leafpad "$SALLY_FILE" ;;
     2) "$RUNX" leafpad "$PENNY_FILE" ;;
     3) "$RUNX" tuxpaint ;;
-    4)
-      clear
-      echo "Logo tips:"
-      echo "  TRY:  FD 50"
-      echo "  TRY:  RT 90"
-      echo "  TRY:  REPEAT 4 [FD 50 RT 90]"
-      echo
-      echo "Optional:"
-      echo "  load \"$LOGO_WELCOME\""
-      echo
-      read -n1 -rsp "Press any key to start Logo..."
-      echo
-      "$RUNX" ucblogo
-      ;;
+    4) "$RUNX" ucblogo "$LOGO_WELCOME" ;;
     5)
       clear
       echo "PC-BASIC tips:"

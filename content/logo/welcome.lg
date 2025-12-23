@@ -1,3 +1,7 @@
+setbg 15
+setpc 0
+cs
+
 ; Welcome to Logo!
 ; Try these:
 ;   FD 50
@@ -10,7 +14,20 @@ end
 
 to house :n
   square :n
+  fd :n
   rt 30
   repeat 3 [fd :n rt 120]
   lt 30
 end
+
+house 100
+
+print [Try:]
+print [  FD 50]
+print [  RT 90]
+print [  REPEAT 4 [FD 50 RT 90]]
+print [  HOME]
+print [  CS]
+print [  ST (show turtle) / HT (hide turtle)]
+print [  PU (pen up) / PD (pen down)]
+print [Type BYE to quit.]
