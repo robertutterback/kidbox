@@ -14,18 +14,22 @@ RUNX="$HOME/bin/runx.sh"
 SALLY_FILE="$KIDBOX_DIR/typing/sally.txt"
 PENNY_FILE="$KIDBOX_DIR/typing/penny.txt"
 LOGO_WELCOME="$KIDBOX_DIR/logo/welcome.lg"
+CLOCK_SCRIPT="$HOME/bin/clock.sh"
+TIMER_SCRIPT="$HOME/bin/timer.sh"
 
 while true; do
   CHOICE=$(
     whiptail --title "Girls' Computer" \
       --menu "Choose something to do" 20 70 10 \
-        1 "Type letters (Sally)" \
-        2 "Type letters (Penny)" \
-        3 "Draw pictures (Tux Paint)" \
-        4 "Logo turtle (UCBLogo)" \
-        5 "BASIC programming (PC-BASIC)" \
+        1 "Type Letters (Sally)" \
+        2 "Type Letters (Penny)" \
+        3 "Draw Pictures" \
+        4 "Draw Pictures with Logo Turtle" \
+        5 "Write BASIC Programs" \
+        6 "Clock" \
+        7 "Timer" \
       3>&1 1>&2 2>&3
-  ) || { 
+  ) || {
     # Esc / Cancel: just re-show the menu
     continue
   }
@@ -48,5 +52,7 @@ while true; do
       echo
       "$RUNX" pcbasic
       ;;
+    6) "$RUNX" "$CLOCK_SCRIPT" ;;
+    7) "$RUNX" "$TIMER_SCRIPT" ;;
   esac
 done

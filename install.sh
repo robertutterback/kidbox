@@ -53,6 +53,11 @@ APT_PACKAGES=(
   unclutter
   whiptail
   xbindkeys
+  x11-apps
+  tty-clock
+  zenity
+  xterm
+  alsa-utils
 )
 
 echo "[kidbox] Installing packages..."
@@ -73,7 +78,9 @@ install -d -m 0755 "$KIDBOX_DIR/typing" "$KIDBOX_DIR/basic" "$KIDBOX_DIR/logo"
 # -------------------------------
 echo "[kidbox] Installing scripts..."
 install -m 0755 "$REPO_ROOT/bin/menu.sh" "$KID_BIN_DIR/menu.sh"
-install -m 0755 "$REPO_ROOT/bin/runx.sh"    "$KID_BIN_DIR/runx.sh"
+install -m 0755 "$REPO_ROOT/bin/runx.sh" "$KID_BIN_DIR/runx.sh"
+install -m 0755 "$REPO_ROOT/bin/clock.sh" "$KID_BIN_DIR/clock.sh"
+install -m 0755 "$REPO_ROOT/bin/timer.sh" "$KID_BIN_DIR/timer.sh"
 
 # -------------------------------
 # Install .xinitrc

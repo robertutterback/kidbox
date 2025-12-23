@@ -11,6 +11,8 @@ MVP Activities:
 - BASIC: PC-BASIC (GW-BASIC-like)
 - Typing (w/ color color): Leafpad
 - Drawing: Tux Paint
+- Clock: Analog (xclock) + Digital (tty-clock)
+- Timer: Visual countdown with sound
 
 Intentionally simple and explicit. The idea is that the only way to
 use such a computer is to start understanding how it works.
