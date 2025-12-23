@@ -3,12 +3,32 @@ set -euo pipefail
 
 # Initially created by ChatGPT with my guidance.
 
+if [[ $EUID -ne 0 ]]; then
+    echo "Please run as root."
+    exit 1
+fi
+
+
 # -------------------------------
 # Config
 # -------------------------------
 KID_USER="${KID_USER:-girls}"
-KID_HOME="$(getent passwd "$KID_USER" | cut -d: -f6)"
 
+# Create kid user if missing
+if ! id -u "$KID_USER" >/dev/null 2>&1; then
+  echo "[kidbox] Creating user '$KID_USER'..."
+  # No password (console autologin will be enabled separately via raspi-config)
+  adduser --disabled-password --gecos "" "$KID_USER"
+  
+  # Useful groups for sound/video/input devices
+  for g in audio video input plugdev render; do
+    if getent group "$g" >/dev/null 2>&1; then
+      usermod -aG "$g" "$KID_USER"
+    fi
+  done
+fi
+
+KID_HOME="$(getent passwd "$KID_USER" | cut -d: -f6)"
 if [[ -z "${KID_HOME}" || ! -d "${KID_HOME}" ]]; then
   echo "ERROR: user '$KID_USER' not found or home directory missing."
   echo "Create the user first, or run with: sudo KID_USER=someuser ./install.sh"
@@ -24,7 +44,7 @@ KID_BIN_DIR="${KID_HOME}/bin"
 # -------------------------------
 APT_PACKAGES=(
   ucblogo
-  pcbasic
+  python3-pcbasic
   tuxpaint
   leafpad
   xserver-xorg
