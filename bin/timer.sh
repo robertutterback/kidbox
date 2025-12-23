@@ -23,7 +23,7 @@ xterm -maximized -fa 'Monospace' -fs 48 -e bash -c "
   TIMER_SOUND=\"\$HOME/kidbox/timer.mp3\"
   MUSIC_PID=\"\"
   if [ -f \"\$TIMER_SOUND\" ] && command -v mpg123 >/dev/null 2>&1; then
-    mpg123 -q -l -1 \"\$TIMER_SOUND\" >/dev/null 2>&1 &
+    mpg123 -q --loop -1 \"\$TIMER_SOUND\" >/dev/null 2>&1 &
     MUSIC_PID=\$!
   fi
 
@@ -59,7 +59,7 @@ xterm -maximized -fa 'Monospace' -fs 48 -e bash -c "
   ALARM_SOUND=\"\$HOME/kidbox/alarm.mp3\"
   ALARM_PID=\"\"
   if [ -f \"\$ALARM_SOUND\" ] && command -v mpg123 >/dev/null 2>&1; then
-    mpg123 -q -l -1 \"\$ALARM_SOUND\" >/dev/null 2>&1 &
+    mpg123 -q --loop -1 \"\$ALARM_SOUND\" >/dev/null 2>&1 &
     ALARM_PID=\$!
   elif [ -f \"\$ALARM_SOUND\" ] && command -v ffplay >/dev/null 2>&1; then
     ffplay -nodisp -loop 0 -v quiet \"\$ALARM_SOUND\" >/dev/null 2>&1 &
