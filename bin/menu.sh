@@ -71,19 +71,7 @@ while true; do
     2) run_x leafpad "$PENNY_FILE" ;;
     3) run_x tuxpaint ;;
     4) run_x ucblogo "$LOGO_WELCOME" ;;
-    5)
-      clear
-      echo "PC-BASIC tips:"
-      echo "  10 PRINT \"HI\""
-      echo "  20 GOTO 10"
-      echo "  RUN"
-      echo "  LIST"
-      echo "  NEW"
-      echo
-      read -n1 -rsp "Press any key to start BASIC..."
-      echo
-      run_x pcbasic
-      ;;
+    5) run_x pcbasic ;;
     6) run_x "$CLOCK_SCRIPT" ;;
     7) run_x "$TIMER_SCRIPT" ;;
     8) run_x "$STOPWATCH_SCRIPT" ;;
