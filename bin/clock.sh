@@ -2,17 +2,30 @@
 set -euo pipefail
 
 # Fullscreen xterm that will contain both clocks
-# The xterm runs tty-clock (digital), and we launch xclock (analog) on top
-xterm -maximized -fa 'Monospace' -fs 16 -e bash -c '
-  # Launch analog clock as background process (floats on top of xterm)
-  # Position it on the left side
-  xclock -analog -update 1 -geometry 400x400+100+150 &
-  XCLOCK_PID=$!
+# The xterm shows digital time on right, cairo-clock (analog) floats on left
+xterm -maximized -fa 'Monospace' -fs 48 -e bash -c '
+  # Launch analog clock on left side
+  # Large clock for 1920x1080 display, positioned at left
+  cairo-clock --width=700 --height=700 &
+  CLOCK_PID=$!
 
-  # Trap exit to clean up xclock
-  trap "kill $XCLOCK_PID 2>/dev/null || true" EXIT
+  # Trap exit to clean up cairo-clock
+  trap "kill $CLOCK_PID 2>/dev/null || true" EXIT
 
-  # Run digital clock in the xterm (centered)
-  # -C 6 = cyan, -s = show seconds, -c = center
-  exec tty-clock -sC 6 -c
+  # Simple digital clock display on the right
+  # Cyan color, large text, positioned to avoid analog clock
+  tput civis  # hide cursor
+  while true; do
+    TIME=$(date "+%I:%M:%S %p")
+    DATE=$(date "+%A, %B %d, %Y")
+
+    tput clear
+    tput setaf 6  # cyan
+    tput cup 12 80   # position: row 12, column 80 (right side)
+    echo "$TIME"
+    tput cup 14 80
+    echo "$DATE"
+
+    sleep 1
+  done
 '

@@ -55,6 +55,7 @@ APT_PACKAGES=(
   xbindkeys
   x11-apps
   tty-clock
+  cairo-clock
   zenity
   xterm
   alsa-utils
