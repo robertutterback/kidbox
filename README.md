@@ -1,6 +1,7 @@
 # kidbox
 
-A retro-style kid computer setup for Raspberry Pi:
+A locked-down, retro-style kid computer setup for Raspberry Pi:
+
 - Boots to console
 - Auto-launches a simple menu
 - Launches minimal X only for selected programs
@@ -10,6 +11,9 @@ MVP Activities:
 - BASIC: PC-BASIC (GW-BASIC-like)
 - Typing (w/ color color): Leafpad
 - Drawing: Tux Paint
+
+Intentionally simple and explicit. The idea is that the only way to
+use such a computer is to start understanding how it works.
 
 ## Install
 
