@@ -1,18 +1,19 @@
-\documentclass[11pt,oneside]{memoir}
-
-% Half-letter / half-plate trim size
-\setstocksize{8.5in}{5.5in}
-\settrimmedsize{8.5in}{5.5in}{*}
-\settypeblocksize{*}{4.4in}{1.20} % readable line length
-\setlrmargins{*}{*}{1}
-\setulmargins{*}{*}{1}
-\checkandfixthelayout
+\documentclass[11pt,oneside,paper=5.5in:8.5in,DIV=13,chapterprefix=false,headings=big]{scrbook}
 
 \usepackage{microtype}
 \usepackage{hyperref}
 
+\usepackage{fvextra}
+\DefineVerbatimEnvironment{verbatim}{Verbatim}{fontsize=\small}
+
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0.6em}
+
+\addtokomafont{disposition}{\rmfamily}
+\RedeclareSectionCommand[
+  beforeskip=0pt,
+  afterskip=\baselineskip
+]{chapter}
 
 \begin{document}
 
@@ -21,14 +22,16 @@
 \vspace*{2em}
 {\Huge\bfseries The Kid Computer}\\
 \vspace{0.5em}
-{\Large Christmas 2025}
+{\Large Christmas 2025}\\
+\vspace{0.5em}
+Sally \& Penny Utterback
 \end{center}
 \thispagestyle{empty}
-\newpage
+\cleardoublepage
 
-\tableofcontents*
+\tableofcontents
+
 \mainmatter
-
 \chapter{Welcome}
 
 This is a computer for doing a few things carefully.
@@ -53,8 +56,10 @@ To leave and go back to the menu,
 hold down Ctrl and Alt,
 then press Backspace.
 
+\chapter{The Turtle (Logo): Telling the Computer to Draw}
 
-\chapter{The Turtle}
+Instead of drawing yourself, you can tell the computer what to draw,
+so that it happpens exactly like you want.
 
 The turtle listens to words.
 
@@ -70,6 +75,20 @@ You can tell the turtle to move.
 You can tell it to turn.
 
 \section{Square}
+
+\begin{verbatim}
+FD 100
+RT 90
+FD 100
+RT 90
+FD 100
+RT 90
+FD 100
+RT 90
+\end{verbatim}
+
+That is a lot of typing.
+You can also say:
 
 \begin{verbatim}
 REPEAT 4 [FD 100 RT 90]
@@ -120,9 +139,9 @@ REPEAT 8 [REPEAT 4 [FD 50 RT 90] RT 45]
 \item \texttt{PD} — pen down (draw again)
 \end{itemize}
 
-\chapter{Small Programs}
+\chapter{BASIC: Telling the Computer What to Do}
 
-This computer can run small programs.
+You can do Daddy's job! This computer can run small programs.
 
 Programs are made from lines with numbers.
 
@@ -251,5 +270,11 @@ Try:
 \item changing how many times it prints
 \item printing something else
 \end{itemize}
+
+%% \clearpage
+%% \thispagestyle{empty}
+%% \null
+% Repeat until page count is a multiple of 4.
+
 
 \end{document}
