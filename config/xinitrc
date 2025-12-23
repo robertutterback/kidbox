@@ -10,7 +10,7 @@ xset s noblank
 unclutter -idle 3 &
 
 # Minimal window manager (no taskbar/panel)
-matchbox-window-manager -use_titlebar no -use_lowlight &
+matchbox-window-manager -use_titlebar no -use_lowlight -use_fullscreen &
 
 xbindkeys &
 
