@@ -13,14 +13,11 @@ MVP Activities:
 
 ## Install
 
-1. Clone into /opt (recommended):
+1. Clone and run install script:
 ```bash
-sudo mkdir -p /opt
-sudo chown "$USER":"$USER" /opt
-cd /opt
-git clone <YOUR_REPO_URL> kidbox
+git clone <REPO_URL> kidbox
 cd kidbox
-sudo ./install.sh
+sudo KID_USER=girls ./install.sh
 ```
 2. Set auto-login to console for the kid user:
 
@@ -32,7 +29,6 @@ sudo raspi-config
 ## Update
 
 ```bash
-cd /opt/kidbox
 git pull
 sudo ./install.sh
 ```
