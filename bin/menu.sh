@@ -59,7 +59,7 @@ while true; do
       echo
       read -n1 -rsp "Press any key to start BASIC..."
       echo
-      pcbasic
+      "$RUNX" pcbasic
       ;;
   esac
 done
