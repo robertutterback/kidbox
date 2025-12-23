@@ -9,7 +9,9 @@ set -euo pipefail
 #trap '' INT
 
 KIDBOX_DIR="$HOME/kidbox"
-RUNX="$HOME/bin/runx.sh"
+LOG_DIR="$HOME/.kidbox-logs"
+mkdir -p "$LOG_DIR"
+LOGFILE="$LOG_DIR/$(date +%Y-%m-%d).log"
 
 SALLY_FILE="$KIDBOX_DIR/typing/sally.txt"
 PENNY_FILE="$KIDBOX_DIR/typing/penny.txt"
@@ -18,6 +20,28 @@ CLOCK_SCRIPT="$HOME/bin/clock.sh"
 TIMER_SCRIPT="$HOME/bin/timer.sh"
 STOPWATCH_SCRIPT="$HOME/bin/stopwatch.sh"
 BOOK_PDF="$KIDBOX_DIR/kidbook.pdf"
+
+# Function to run X programs with logging
+# Usage: run_x <program> [args...]
+run_x() {
+  if [[ $# -lt 1 ]]; then
+    echo "ERROR: run_x requires at least one argument" >&2
+    return 2
+  fi
+
+  local timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
+  echo "[$timestamp] Starting: $*" >> "$LOGFILE"
+
+  export KID_APP="$1"
+  shift || true
+  export KID_ARGS="${*:-}"
+
+  # Start X server and capture output to log
+  xinit -- :1 -br -nolisten tcp "vt${XDG_VTNR:-1}" >> "$LOGFILE" 2>&1
+
+  timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
+  echo "[$timestamp] Finished: $KID_APP" >> "$LOGFILE"
+}
 
 while true; do
   CHOICE=$(
@@ -39,10 +63,10 @@ while true; do
   }
 
   case "$CHOICE" in
-    1) "$RUNX" leafpad "$SALLY_FILE" ;;
-    2) "$RUNX" leafpad "$PENNY_FILE" ;;
-    3) "$RUNX" tuxpaint ;;
-    4) "$RUNX" ucblogo "$LOGO_WELCOME" ;;
+    1) run_x leafpad "$SALLY_FILE" ;;
+    2) run_x leafpad "$PENNY_FILE" ;;
+    3) run_x tuxpaint ;;
+    4) run_x ucblogo "$LOGO_WELCOME" ;;
     5)
       clear
       echo "PC-BASIC tips:"
@@ -54,11 +78,11 @@ while true; do
       echo
       read -n1 -rsp "Press any key to start BASIC..."
       echo
-      "$RUNX" pcbasic
+      run_x pcbasic
       ;;
-    6) "$RUNX" "$CLOCK_SCRIPT" ;;
-    7) "$RUNX" "$TIMER_SCRIPT" ;;
-    8) "$RUNX" "$STOPWATCH_SCRIPT" ;;
-    9) "$RUNX" evince "$BOOK_PDF" ;;
+    6) run_x "$CLOCK_SCRIPT" ;;
+    7) run_x "$TIMER_SCRIPT" ;;
+    8) run_x "$STOPWATCH_SCRIPT" ;;
+    9) run_x evince "$BOOK_PDF" ;;
   esac
 done

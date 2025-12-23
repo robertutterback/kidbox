@@ -85,4 +85,5 @@ If no custom sounds exist, the countdown is silent and the alarm falls back to s
 - The menu lives at `/home/<kiduser>/bin/menu.sh`
 - The minimal X session lives at `/home/<kiduser>/.xinitrc`
 - Content lives in `/home/<kiduser>/kidbox`
+- Logs are stored in `/home/<kiduser>/.kidbox-logs/YYYY-MM-DD.log`
 
