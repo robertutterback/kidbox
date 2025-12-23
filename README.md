@@ -23,13 +23,20 @@ git clone <REPO_URL> kidbox
 cd kidbox
 sudo KID_USER=girls ./install.sh
 ```
-2. Set auto-login to console for the kid user:
 
+2. Set console auto-login (can't use raspi-config b/c it will do it for your user)
+
+```bash
+sudo systemctl edit getty@tty1
 ```
-sudo raspi-config
-# System Options -> Boot -> Console Text console
-# System Options -> Auto Login -> yes
+
+```ini
+[Service]
+ExecStart= # clear default ExecStart inherited from the unit
+ExecStart=-/sbin/agetty --autologin <kiduser> --noclear %I $TERM
 ```
+
+3. Reboot
 
 ## Update
 
