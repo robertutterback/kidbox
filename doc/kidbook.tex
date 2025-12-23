@@ -1,0 +1,255 @@
+\documentclass[11pt,oneside]{memoir}
+
+% Half-letter / half-plate trim size
+\setstocksize{8.5in}{5.5in}
+\settrimmedsize{8.5in}{5.5in}{*}
+\settypeblocksize{*}{4.4in}{1.20} % readable line length
+\setlrmargins{*}{*}{1}
+\setulmargins{*}{*}{1}
+\checkandfixthelayout
+
+\usepackage{microtype}
+\usepackage{hyperref}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.6em}
+
+\begin{document}
+
+\frontmatter
+\begin{center}
+\vspace*{2em}
+{\Huge\bfseries The Kid Computer}\\
+\vspace{0.5em}
+{\Large Christmas 2025}
+\end{center}
+\thispagestyle{empty}
+\newpage
+
+\tableofcontents*
+\mainmatter
+
+\chapter{Welcome}
+
+This is a computer for doing a few things carefully.
+
+You can make pictures.
+You can move a turtle.
+You can type small programs.
+
+When you are done with something,
+you can always come back.
+
+\chapter{The Menu}
+
+When the computer turns on, you see the menu.
+
+The menu lets you choose what to do.
+
+Use the arrow keys to pick what you want.
+Press Enter to start it.
+
+To leave and go back to the menu,
+hold down Ctrl and Alt,
+then press Backspace.
+
+
+\chapter{The Turtle}
+
+The turtle listens to words.
+
+Try typing:
+
+\begin{verbatim}
+FD 50
+RT 90
+LT 90
+\end{verbatim}
+
+You can tell the turtle to move.
+You can tell it to turn.
+
+\section{Square}
+
+\begin{verbatim}
+REPEAT 4 [FD 100 RT 90]
+\end{verbatim}
+
+Try changing:
+\begin{itemize}
+\item \texttt{100} to make it bigger or smaller
+\item \texttt{90} to see what happens
+\end{itemize}
+
+\section{Triangle}
+
+\begin{verbatim}
+REPEAT 3 [FD 100 RT 120]
+\end{verbatim}
+
+\section{Spiral}
+
+\begin{verbatim}
+REPEAT 36 [FD 10 RT 10]
+\end{verbatim}
+
+Try:
+\begin{itemize}
+\item changing the numbers
+\item making it repeat more times
+\end{itemize}
+
+\section{Star}
+
+\begin{verbatim}
+REPEAT 5 [FD 100 RT 144]
+\end{verbatim}
+
+\section{Flower}
+
+\begin{verbatim}
+REPEAT 8 [REPEAT 4 [FD 50 RT 90] RT 45]
+\end{verbatim}
+
+\section{Useful Commands}
+
+\begin{itemize}
+\item \texttt{CS} — clear the screen
+\item \texttt{HOME} — send the turtle back to the middle
+\item \texttt{PU} — pen up (move without drawing)
+\item \texttt{PD} — pen down (draw again)
+\end{itemize}
+
+\chapter{Small Programs}
+
+This computer can run small programs.
+
+Programs are made from lines with numbers.
+
+You type the lines.
+Then you type:
+
+\begin{center}
+\texttt{RUN}
+\end{center}
+
+\section{Useful Commands}
+
+\begin{itemize}
+\item \texttt{RUN} — makes the program go
+\item \texttt{LIST} — shows what you typed
+\item \texttt{NEW} — erase and start over
+\item \texttt{CLS} — clear the screen
+\end{itemize}
+
+If the screen fills up or will not stop,
+press \textbf{Ctrl + C}.
+
+\section{Growing Stars}
+
+This makes stars grow down the screen.
+
+\begin{verbatim}
+10 CLS
+20 FOR I = 1 TO 20
+30 PRINT STRING$(I, "*")
+40 NEXT I
+50 END
+\end{verbatim}
+
+Try changing:
+\begin{itemize}
+\item \texttt{20} to a bigger number
+\item \texttt{"*"} to another letter
+\end{itemize}
+
+\section{Letter Rain}
+
+Letters fall forever!
+
+\begin{verbatim}
+10 CLS
+20 PRINT CHR$(65 + RND * 26);
+30 GOTO 20
+\end{verbatim}
+
+To stop it, press \textbf{Ctrl + C}.
+
+\section{Bouncing Word}
+
+The word moves back and forth.
+
+\begin{verbatim}
+10 CLS
+20 FOR X = 1 TO 20
+30 PRINT SPC(X) + "HI!"
+40 NEXT X
+50 FOR X = 20 TO 1 STEP -1
+60 PRINT SPC(X) + "HI!"
+70 NEXT X
+80 GOTO 10
+\end{verbatim}
+
+Try changing:
+\begin{itemize}
+\item \texttt{"HI!"} to your name
+\item the numbers to make it move more
+\end{itemize}
+
+\section{Number Explosion}
+
+Numbers fill the screen.
+
+\begin{verbatim}
+10 CLS
+20 FOR I = 1 TO 10
+30 PRINT I; I; I; I; I
+40 NEXT I
+50 END
+\end{verbatim}
+
+Try:
+\begin{itemize}
+\item printing more numbers
+\item changing \texttt{I} to \texttt{I * I}
+\end{itemize}
+
+\section{Checkerboard}
+
+This makes a pattern.
+
+\begin{verbatim}
+10 CLS
+20 FOR R = 1 TO 10
+30 PRINT "* * * * * "
+40 PRINT " * * * * *"
+50 NEXT R
+60 END
+\end{verbatim}
+
+Try:
+\begin{itemize}
+\item changing the symbols
+\item adding more rows
+\end{itemize}
+
+\section{Name Shout}
+
+The computer asks your name!
+
+\begin{verbatim}
+10 CLS
+20 INPUT "WHAT IS YOUR NAME"; N$
+30 FOR I = 1 TO 10
+40 PRINT N$
+50 NEXT I
+60 END
+\end{verbatim}
+
+Try:
+\begin{itemize}
+\item changing how many times it prints
+\item printing something else
+\end{itemize}
+
+\end{document}
