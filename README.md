@@ -14,7 +14,7 @@ MVP Activities:
 - Clock: Custom HTML/CSS/JS analog + digital (Chromium kiosk mode)
 - Timer: Visual countdown with looping background music and alarm
 - Stopwatch: Count-up timer
-- Book: View the instruction book (evince)
+- Book: View the instruction book (Chromium kiosk mode - evince was tried but took ~60s to load, xpdf is too hard for kids)
 
 Intentionally simple and explicit. The idea is that the only way to
 use such a computer is to start understanding how it works.

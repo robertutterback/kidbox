@@ -57,7 +57,6 @@ APT_PACKAGES=(
   zenity
   xterm
   alsa-utils
-  evince
   chromium-browser
   mpg123
 )

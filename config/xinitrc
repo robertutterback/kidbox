@@ -6,9 +6,6 @@ xset -dpms
 xset s off
 xset s noblank
 
-# Update D-Bus activation environment for systemd user services
-dbus-update-activation-environment --systemd DBUS_SESSION_BUS_ADDRESS DISPLAY XAUTHORITY 2>/dev/null || true
-
 # Hide cursor after a few seconds
 unclutter -idle 3 &
 

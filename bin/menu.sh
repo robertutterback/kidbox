@@ -87,6 +87,6 @@ while true; do
     6) run_x "$CLOCK_SCRIPT" ;;
     7) run_x "$TIMER_SCRIPT" ;;
     8) run_x "$STOPWATCH_SCRIPT" ;;
-    9) run_x evince "$BOOK_PDF" ;;
+    9) run_x chromium-browser --kiosk --app="file://$BOOK_PDF" ;;
   esac
 done
