@@ -13,7 +13,7 @@ MVP Activities:
 - Drawing: Tux Paint
 - Clock: Analog (xclock) + Digital (tty-clock)
 - Timer: Visual countdown with sound
-- Book: View the instruction book (xpdf)
+- Book: View the instruction book (evince)
 
 Intentionally simple and explicit. The idea is that the only way to
 use such a computer is to start understanding how it works.
@@ -60,6 +60,23 @@ make
 ```
 
 You can print out `doc/kidbook-booklet.pdf` to make a little booklet.
+
+## Timer Sounds
+
+The timer supports two optional sound files:
+
+- **`content/timer.mp3`** - Loops during the countdown (background music)
+- **`content/alarm.mp3`** - Plays when the timer finishes (alarm sound)
+
+The included timer sounds are from [Mixkit](https://mixkit.co) and are subject to the [Mixkit Sound Effects Free License](https://mixkit.co/license/#sfxFree).
+
+To use custom sounds:
+
+1. Add your own mp3 files to the `content/` directory
+2. Run `sudo ./install.sh` to copy them to the kid's home directory
+3. The timer will automatically use them
+
+If no custom sounds exist, the countdown is silent and the alarm falls back to system beeps.
 
 ## Notes
 
