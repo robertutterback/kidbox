@@ -54,12 +54,12 @@ APT_PACKAGES=(
   whiptail
   xbindkeys
   x11-apps
-  tty-clock
-  cairo-clock
   zenity
   xterm
   alsa-utils
-  xpdf
+  evince
+  chromium-browser
+  mpg123
 )
 
 echo "[kidbox] Installing packages..."
@@ -79,10 +79,11 @@ install -d -m 0755 "$KIDBOX_DIR/typing" "$KIDBOX_DIR/basic" "$KIDBOX_DIR/logo"
 # Install scripts
 # -------------------------------
 echo "[kidbox] Installing scripts..."
-install -m 0755 "$REPO_ROOT/bin/menu.sh" "$KID_BIN_DIR/menu.sh"
-install -m 0755 "$REPO_ROOT/bin/runx.sh" "$KID_BIN_DIR/runx.sh"
-install -m 0755 "$REPO_ROOT/bin/clock.sh" "$KID_BIN_DIR/clock.sh"
-install -m 0755 "$REPO_ROOT/bin/timer.sh" "$KID_BIN_DIR/timer.sh"
+for script in "$REPO_ROOT/bin/"*.sh; do
+  if [[ -f "$script" ]]; then
+    install -m 0755 "$script" "$KID_BIN_DIR/$(basename "$script")"
+  fi
+done
 
 # -------------------------------
 # Install .xinitrc
@@ -119,6 +120,19 @@ install -m 0644 "$REPO_ROOT/content/logo/welcome.lg" "$KIDBOX_DIR/logo/welcome.l
 # Book PDF: copy if exists
 if [[ -f "$REPO_ROOT/doc/kidbook.pdf" ]]; then
   install -m 0644 "$REPO_ROOT/doc/kidbook.pdf" "$KIDBOX_DIR/kidbook.pdf"
+fi
+
+# Clock HTML: copy if exists
+if [[ -f "$REPO_ROOT/content/clock.html" ]]; then
+  install -m 0644 "$REPO_ROOT/content/clock.html" "$KIDBOX_DIR/clock.html"
+fi
+
+# Timer sounds: copy if exist
+if [[ -f "$REPO_ROOT/content/timer.mp3" ]]; then
+  install -m 0644 "$REPO_ROOT/content/timer.mp3" "$KIDBOX_DIR/timer.mp3"
+fi
+if [[ -f "$REPO_ROOT/content/alarm.mp3" ]]; then
+  install -m 0644 "$REPO_ROOT/content/alarm.mp3" "$KIDBOX_DIR/alarm.mp3"
 fi
 
 # -------------------------------
