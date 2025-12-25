@@ -8,6 +8,7 @@ set -euo pipefail
 #
 # Use --dev flag for local testing (adds Exit option, allows Ctrl+C)
 
+VERSION="1.1"
 DEV_MODE=false
 if [[ "${1:-}" == "--dev" ]]; then
   DEV_MODE=true
@@ -56,7 +57,7 @@ run_x() {
   echo "[$timestamp] Finished: $KID_APP" >> "$LOGFILE"
 }
 
-MENU_TITLE="Girls' Computer"
+MENU_TITLE="Girls' Computer (v$VERSION)"
 MENU_ITEMS=(
   1 "Type Letters (Sally)"
   2 "Type Letters (Penny)"
