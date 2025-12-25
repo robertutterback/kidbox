@@ -149,7 +149,7 @@ ACTIVE_CONSOLES="/dev/tty[1-6]"
 CHARMAP="UTF-8"
 CODESET="guess"
 FONTFACE="Terminus"
-FONTSIZE="16x32"
+FONTSIZE="32x16"
 EOF
 
 # Apply the font configuration immediately
