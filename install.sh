@@ -142,7 +142,7 @@ fi
 echo "[kidbox] Configuring large console font..."
 
 # Configure console-setup for a large, child-friendly font
-# Using Terminus 32x16 which is very large and clear
+# Using Terminus 16x32 which is very large and clear
 cat > /etc/default/console-setup << 'EOF'
 # Console setup for kidbox - large fonts for children
 ACTIVE_CONSOLES="/dev/tty[1-6]"
