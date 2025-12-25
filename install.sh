@@ -174,4 +174,15 @@ rm -f "$tmp"
 echo "[kidbox] Fixing ownership..."
 chown -R "$KID_USER":"$KID_USER" "$KID_HOME/.xinitrc" "$KID_BIN_DIR" "$KIDBOX_DIR" "$BASH_PROFILE"
 
+# -------------------------------
+# Sudoers: Allow kid user to shutdown
+# -------------------------------
+echo "[kidbox] Configuring shutdown permissions..."
+SUDOERS_FILE="/etc/sudoers.d/kidbox-shutdown"
+cat > "$SUDOERS_FILE" <<EOF
+# Allow kid user to shutdown without password
+$KID_USER ALL=(ALL) NOPASSWD: /sbin/shutdown
+EOF
+chmod 0440 "$SUDOERS_FILE"
+
 echo "[kidbox] Done."
