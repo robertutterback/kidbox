@@ -181,7 +181,7 @@ echo "[kidbox] Configuring shutdown permissions..."
 SUDOERS_FILE="/etc/sudoers.d/kidbox-shutdown"
 cat > "$SUDOERS_FILE" <<EOF
 # Allow kid user to shutdown without password
-$KID_USER ALL=(ALL) NOPASSWD: /sbin/shutdown
+$KID_USER ALL=(ALL) NOPASSWD: /sbin/shutdown -h now
 EOF
 chmod 0440 "$SUDOERS_FILE"
 
