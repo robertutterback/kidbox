@@ -59,6 +59,8 @@ APT_PACKAGES=(
   alsa-utils
   chromium-browser
   mpg123
+  console-setup
+  kbd
 )
 
 echo "[kidbox] Installing packages..."
@@ -132,6 +134,27 @@ if [[ -f "$REPO_ROOT/content/timer.mp3" ]]; then
 fi
 if [[ -f "$REPO_ROOT/content/alarm.mp3" ]]; then
   install -m 0644 "$REPO_ROOT/content/alarm.mp3" "$KIDBOX_DIR/alarm.mp3"
+fi
+
+# -------------------------------
+# Configure large console font for children
+# -------------------------------
+echo "[kidbox] Configuring large console font..."
+
+# Configure console-setup for a large, child-friendly font
+# Using Terminus 32x16 which is very large and clear
+cat > /etc/default/console-setup << 'EOF'
+# Console setup for kidbox - large fonts for children
+ACTIVE_CONSOLES="/dev/tty[1-6]"
+CHARMAP="UTF-8"
+CODESET="guess"
+FONTFACE="Terminus"
+FONTSIZE="16x32"
+EOF
+
+# Apply the font configuration immediately
+if command -v setupcon >/dev/null 2>&1; then
+  setupcon --save-only
 fi
 
 # -------------------------------
