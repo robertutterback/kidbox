@@ -17,6 +17,14 @@ LOG_DIR="$HOME/.kidbox-logs"
 mkdir -p "$LOG_DIR"
 LOGFILE="$LOG_DIR/$(date +%Y-%m-%d).log"
 
+# Read version from VERSION file
+VERSION_FILE="$KIDBOX_DIR/VERSION"
+if [[ -f "$VERSION_FILE" ]]; then
+  VERSION=$(cat "$VERSION_FILE" | tr -d '\n')
+else
+  VERSION="unknown"
+fi
+
 SALLY_FILE="$KIDBOX_DIR/typing/sally.txt"
 PENNY_FILE="$KIDBOX_DIR/typing/penny.txt"
 LOGO_WELCOME="$KIDBOX_DIR/logo/welcome.lg"
@@ -50,6 +58,7 @@ run_x() {
 while true; do
   CHOICE=$(
     whiptail --title "Girls' Computer" \
+      --backtitle "Kidbox v$VERSION" \
       --menu "Choose something to do" 20 70 11 \
         1 "Type Letters (Sally)" \
         2 "Type Letters (Penny)" \
