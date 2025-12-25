@@ -183,6 +183,13 @@ cat > "$SUDOERS_FILE" <<EOF
 # Allow kid user to shutdown without password
 $KID_USER ALL=(ALL) NOPASSWD: /sbin/shutdown -h now
 EOF
+
+# Validate sudoers syntax before enabling it
+if ! visudo -c -f "$SUDOERS_FILE"; then
+  echo "[kidbox] Error: invalid sudoers configuration in $SUDOERS_FILE" >&2
+  rm -f "$SUDOERS_FILE"
+  exit 1
+fi
 chmod 0440 "$SUDOERS_FILE"
 
 echo "[kidbox] Done."
