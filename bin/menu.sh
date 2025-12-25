@@ -56,6 +56,7 @@ run_x() {
   echo "[$timestamp] Finished: $KID_APP" >> "$LOGFILE"
 }
 
+MENU_TITLE="Girls' Computer"
 MENU_ITEMS=(
   1 "Type Letters (Sally)"
   2 "Type Letters (Penny)"
@@ -70,10 +71,7 @@ MENU_ITEMS=(
 )
 
 if [[ "$DEV_MODE" == true ]]; then
-  MENU_TITLE="Girls' Computer [DEV MODE]"
-  MENU_ITEMS+=(0 "Exit Menu")
-else
-  MENU_TITLE="Girls' Computer"
+  MENU_TITLE+=" [dev mode]"
 fi
 
 while true; do
