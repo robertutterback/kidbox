@@ -3,9 +3,7 @@ if [[ -t 0 && -z "${SSH_CONNECTION:-}" ]]; then
   # Set large console font for children before showing menu
   # Using Terminus 32x16 (32 px tall, 16 px wide) for maximum readability
   if command -v setfont >/dev/null 2>&1; then
-    setfont /usr/share/consolefonts/Lat15-Terminus32x16.psf.gz 2>/dev/null || \
-    setfont ter-132n 2>/dev/null || \
-    setfont ter-v32n 2>/dev/null || true
+    (setfont ter-v32n || setfont ter-132n || setfont /usr/share/consolefonts/Lat15-Terminus32x16.psf.gz) >/dev/null 2>&1 || true
   fi
 
   # If the menu exits, we drop back to a shell.
