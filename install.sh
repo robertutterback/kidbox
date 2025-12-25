@@ -97,6 +97,12 @@ echo "[kidbox] Installing .xbindkeysrc..."
 install -m 0755 "$REPO_ROOT/config/xbindkeysrc" "$KID_HOME/.xbindkeysrc"
 
 # -------------------------------
+# Install .Xresources
+# -------------------------------
+echo "[kidbox] Installing .Xresources..."
+install -m 0644 "$REPO_ROOT/config/Xresources" "$KID_HOME/.Xresources"
+
+# -------------------------------
 # Install content (do not clobber if already modified)
 # - Use install -C to avoid overwriting identical files (GNU coreutils)
 # - For typing files, we DO want them to persist; only create if missing.
@@ -172,6 +178,6 @@ rm -f "$tmp"
 # Ownership
 # -------------------------------
 echo "[kidbox] Fixing ownership..."
-chown -R "$KID_USER":"$KID_USER" "$KID_HOME/.xinitrc" "$KID_BIN_DIR" "$KIDBOX_DIR" "$BASH_PROFILE"
+chown -R "$KID_USER":"$KID_USER" "$KID_HOME/.xinitrc" "$KID_HOME/.xbindkeysrc" "$KID_HOME/.Xresources" "$KID_BIN_DIR" "$KIDBOX_DIR" "$BASH_PROFILE"
 
 echo "[kidbox] Done."

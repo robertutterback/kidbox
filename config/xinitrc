@@ -6,6 +6,9 @@ xset -dpms
 xset s off
 xset s noblank
 
+# Load X resources for larger fonts (for children)
+[ -f ~/.Xresources ] && xrdb -merge ~/.Xresources
+
 # Hide cursor after a few seconds
 unclutter -idle 3 &
 
