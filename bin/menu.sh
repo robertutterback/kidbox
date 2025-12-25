@@ -56,37 +56,27 @@ run_x() {
   echo "[$timestamp] Finished: $KID_APP" >> "$LOGFILE"
 }
 
+MENU_ITEMS=(
+  1 "Type Letters (Sally)"
+  2 "Type Letters (Penny)"
+  3 "Draw Pictures"
+  4 "Draw Pictures with Logo Turtle"
+  5 "Write BASIC Programs"
+  6 "Clock"
+  7 "Timer"
+  8 "Stopwatch"
+  9 "Read the Book"
+  10 "Shutdown Computer"
+)
+
+if [[ "$DEV_MODE" == true ]]; then
+  MENU_TITLE="Girls' Computer [DEV MODE]"
+  MENU_ITEMS+=(0 "Exit Menu")
+else
+  MENU_TITLE="Girls' Computer"
+fi
+
 while true; do
-  if [[ "$DEV_MODE" == true ]]; then
-    MENU_TITLE="Girls' Computer [DEV MODE]"
-    MENU_ITEMS=(
-      1 "Type Letters (Sally)"
-      2 "Type Letters (Penny)"
-      3 "Draw Pictures"
-      4 "Draw Pictures with Logo Turtle"
-      5 "Write BASIC Programs"
-      6 "Clock"
-      7 "Timer"
-      8 "Stopwatch"
-      9 "Read the Book"
-      10 "Shutdown Computer"
-      0 "Exit Menu"
-    )
-  else
-    MENU_TITLE="Girls' Computer"
-    MENU_ITEMS=(
-      1 "Type Letters (Sally)"
-      2 "Type Letters (Penny)"
-      3 "Draw Pictures"
-      4 "Draw Pictures with Logo Turtle"
-      5 "Write BASIC Programs"
-      6 "Clock"
-      7 "Timer"
-      8 "Stopwatch"
-      9 "Read the Book"
-      10 "Shutdown Computer"
-    )
-  fi
 
   CHOICE=$(
     whiptail --title "$MENU_TITLE" \
