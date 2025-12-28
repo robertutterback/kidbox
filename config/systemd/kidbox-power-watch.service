@@ -1,0 +1,41 @@
+# kidbox-power-watch.service
+# Systemd service unit for monitoring the power button
+#
+# This service should be installed to /etc/systemd/system/kidbox-power-watch.service
+# and enabled to start at boot.
+#
+# Purpose: Monitor physical power button and distinguish short vs long press
+#   - Short press: show power menu (shutdown/reboot/cancel)
+#   - Long press: immediate poweroff (emergency override)
+
+[Unit]
+Description=Kidbox Power Button Monitor
+Documentation=https://github.com/robertutterback/kidbox
+After=systemd-logind.service
+Requires=systemd-logind.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/kidbox-power-watch.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+# Security hardening
+# Run as root (required for input device access)
+User=root
+# Protect system directories
+ProtectSystem=strict
+# Protect home directories (we don't need to write there)
+ProtectHome=yes
+# Prevent writing to /etc
+ReadWritePaths=
+# Restrict filesystem access
+PrivateTmp=yes
+# Restrict device access to what we need
+DevicePolicy=closed
+DeviceAllow=/dev/input/event* r
+
+[Install]
+WantedBy=multi-user.target
