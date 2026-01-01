@@ -1,10 +1,11 @@
 #!/bin/sh
 set -eu
 
-# Keep screen from blanking (kids hate "it turned off")
-xset -dpms
-xset s off
-xset s noblank
+# Enable screen blanking / monitor power-off after 10 minutes
+xset +dpms
+xset s on
+xset s 600 600
+xset dpms 600 600 600
 
 # Hide cursor after a few seconds
 unclutter -idle 3 &
