@@ -120,10 +120,10 @@ def monitor_power_button(device):
                 last_release_time = event_time
 
                 # Determine short vs long press
-                if duration < LONG_PRESS_THRESHOLD:
-                    handle_short_press()
-                else:
+                if duration >= LONG_PRESS_THRESHOLD:
                     handle_long_press()
+                elif duration >= 0.1:  # Minimum press duration to avoid bounces
+                    handle_short_press()
 
                 press_time = None
 
