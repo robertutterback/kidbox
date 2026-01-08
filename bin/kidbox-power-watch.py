@@ -47,7 +47,7 @@ logger = logging.getLogger(__name__)
 def find_power_button_device():
     """
     Find the input device that generates KEY_POWER events.
-    Returns the device path or None if not found.
+    Returns the InputDevice object or None if not found.
     """
     for device_path in list_devices():
         try:
