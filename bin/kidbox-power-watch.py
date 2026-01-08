@@ -23,7 +23,7 @@ import logging
 from pathlib import Path
 
 try:
-    from evdev import InputDevice, categorize, ecodes, list_devices
+    from evdev import InputDevice, ecodes, list_devices
 except ImportError:
     print("ERROR: python3-evdev not installed. Install with: apt-get install python3-evdev", file=sys.stderr)
     sys.exit(1)
