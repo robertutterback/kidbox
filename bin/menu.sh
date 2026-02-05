@@ -77,9 +77,14 @@ fi
 
 while true; do
 
+  # Size the menu to fill the terminal
+  TERM_LINES="${LINES:-$(tput lines 2>/dev/null || echo 24)}"
+  TERM_COLS="${COLUMNS:-$(tput cols 2>/dev/null || echo 80)}"
+  MENU_ROWS=$(( TERM_LINES - 8 ))
+
   CHOICE=$(
     whiptail --title "$MENU_TITLE" \
-      --menu "Choose something to do" 20 70 11 \
+      --menu "Choose something to do" "$TERM_LINES" "$TERM_COLS" "$MENU_ROWS" \
         "${MENU_ITEMS[@]}" \
       3>&1 1>&2 2>&3
   ) || {
