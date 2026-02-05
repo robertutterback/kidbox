@@ -1,11 +1,11 @@
 #!/bin/sh
 set -eu
 
-# Blank screen after 30 minutes of inactivity
+# Enable screen blanking / monitor power-off after 10 minutes
 xset s on
-xset s 1800
+xset s 600
 xset +dpms
-xset dpms 0 0 1800
+xset dpms 0 0 600
 
 # Load X resources for larger fonts (for children)
 [ -f ~/.Xresources ] && xrdb -merge ~/.Xresources
