@@ -59,6 +59,8 @@ APT_PACKAGES=(
   alsa-utils
   chromium-browser
   mpg123
+  console-setup
+  kbd
   python3-evdev
 )
 
@@ -96,6 +98,12 @@ install -m 0755 "$REPO_ROOT/config/xinitrc" "$KID_HOME/.xinitrc"
 # -------------------------------
 echo "[kidbox] Installing .xbindkeysrc..."
 install -m 0755 "$REPO_ROOT/config/xbindkeysrc" "$KID_HOME/.xbindkeysrc"
+
+# -------------------------------
+# Install .Xresources
+# -------------------------------
+echo "[kidbox] Installing .Xresources..."
+install -m 0644 "$REPO_ROOT/config/Xresources" "$KID_HOME/.Xresources"
 
 # -------------------------------
 # Install content (do not clobber if already modified)
@@ -173,7 +181,7 @@ rm -f "$tmp"
 # Ownership
 # -------------------------------
 echo "[kidbox] Fixing ownership..."
-chown -R "$KID_USER":"$KID_USER" "$KID_HOME/.xinitrc" "$KID_BIN_DIR" "$KIDBOX_DIR" "$BASH_PROFILE"
+chown -R "$KID_USER":"$KID_USER" "$KID_HOME/.xinitrc" "$KID_HOME/.xbindkeysrc" "$KID_HOME/.Xresources" "$KID_BIN_DIR" "$KIDBOX_DIR" "$BASH_PROFILE"
 
 # -------------------------------
 # Sudoers: Allow kid user to shutdown

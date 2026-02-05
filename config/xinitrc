@@ -1,10 +1,14 @@
 #!/bin/sh
 set -eu
 
-# Keep screen from blanking (kids hate "it turned off")
-xset -dpms
-xset s off
-xset s noblank
+# Blank screen after 30 minutes of inactivity
+xset s on
+xset s 1800
+xset +dpms
+xset dpms 0 0 1800
+
+# Load X resources for larger fonts (for children)
+[ -f ~/.Xresources ] && xrdb -merge ~/.Xresources
 
 # Hide cursor after a few seconds
 unclutter -idle 3 &

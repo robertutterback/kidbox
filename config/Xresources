@@ -1,0 +1,37 @@
+! X Resources for Kidbox
+! Larger fonts for children
+
+! Set DPI to 120 (default is usually 96)
+! This makes everything larger across X applications
+Xft.dpi: 120
+
+! Enable font antialiasing for smoother text
+Xft.antialias: true
+Xft.hinting: true
+Xft.hintstyle: hintfull
+Xft.rgba: rgb
+
+! XTerm configuration - large, readable fonts for children
+! Using TrueType fonts with -fa (FreeType) option
+XTerm*faceName: Monospace
+XTerm*faceSize: 24
+XTerm*renderFont: true
+
+! XTerm classic font fallback (for apps that don't use FreeType)
+XTerm*font: -misc-fixed-medium-r-normal--20-200-75-75-c-100-iso10646-1
+
+! XTerm colors - keep readable contrast
+XTerm*background: black
+XTerm*foreground: white
+XTerm*cursorColor: green
+
+! XTerm scrollback and behavior
+XTerm*saveLines: 1000
+XTerm*scrollBar: false
+
+! UCBLogo font settings (if it respects X resources)
+Logo*font: -misc-fixed-medium-r-normal--20-200-75-75-c-100-iso10646-1
+
+! General X application font defaults
+*font: -misc-fixed-medium-r-normal--18-180-75-75-c-90-iso10646-1
+*Font: -misc-fixed-medium-r-normal--18-180-75-75-c-90-iso10646-1

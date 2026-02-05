@@ -13,6 +13,9 @@ set -euo pipefail
 # The menu is displayed on VT1 (the console) to ensure it's visible
 # whether the user is in the console menu or in an X session.
 
+# Remember which VT we're on so we can return on Cancel
+ORIG_VT=$(cat /sys/class/tty/tty0/active 2>/dev/null | grep -o '[0-9]*$') || ORIG_VT=""
+
 # Switch to VT1 to ensure menu is visible
 chvt 1
 
@@ -24,23 +27,22 @@ CHOICE=$(
       2 "Reboot" \
       3 "Cancel" \
     3>&1 1>&2 2>&3 </dev/tty1 >/dev/tty1
-) || exit 0  # User pressed Esc or Cancel
+) || {
+  # User pressed Esc - return to original VT
+  [ -n "$ORIG_VT" ] && chvt "$ORIG_VT"
+  exit 0
+}
 
 case "$CHOICE" in
   1)
-    # Shutdown
     systemctl poweroff
     ;;
   2)
-    # Reboot
     systemctl reboot
     ;;
-  3)
-    # Cancel - just exit
-    exit 0
-    ;;
   *)
-    # Unknown choice - just exit
+    # Cancel or unknown - return to original VT
+    [ -n "$ORIG_VT" ] && chvt "$ORIG_VT"
     exit 0
     ;;
 esac
