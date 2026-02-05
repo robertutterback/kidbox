@@ -61,6 +61,7 @@ APT_PACKAGES=(
   mpg123
   console-setup
   kbd
+  python3-evdev
 )
 
 echo "[kidbox] Installing packages..."
@@ -199,5 +200,40 @@ if ! visudo -c -f "$SUDOERS_FILE"; then
   exit 1
 fi
 chmod 0440 "$SUDOERS_FILE"
+
+# -------------------------------
+# Power Button Handling
+# -------------------------------
+echo "[kidbox] Configuring power button handling..."
+
+# Install systemd-logind drop-in configuration
+LOGIND_DROPIN_DIR="/etc/systemd/logind.conf.d"
+install -d -m 0755 "$LOGIND_DROPIN_DIR"
+install -m 0644 "$REPO_ROOT/config/systemd/kidbox-power.conf" "$LOGIND_DROPIN_DIR/kidbox-power.conf"
+
+# Install power menu script
+install -m 0755 "$REPO_ROOT/bin/kidbox-power-menu.sh" "/usr/local/bin/kidbox-power-menu.sh"
+
+# Install power button watcher script
+install -m 0755 "$REPO_ROOT/bin/kidbox-power-watch.py" "/usr/local/bin/kidbox-power-watch.py"
+
+# Install systemd service
+install -m 0644 "$REPO_ROOT/config/systemd/kidbox-power-watch.service" "/etc/systemd/system/kidbox-power-watch.service"
+
+# Reload systemd daemon to pick up new service
+systemctl daemon-reload
+
+# Enable and start power button watcher service
+systemctl enable kidbox-power-watch.service
+systemctl restart kidbox-power-watch.service
+
+# Restart systemd-logind to pick up new configuration
+# Note: This will briefly disconnect any logged-in sessions
+echo "[kidbox] Restarting systemd-logind to apply power button configuration..."
+systemctl restart systemd-logind.service
+
+echo "[kidbox] Power button configuration complete."
+echo "[kidbox] - Short press: shows Power menu (Shutdown/Reboot/Cancel)"
+echo "[kidbox] - Long press (2+ seconds): immediate poweroff"
 
 echo "[kidbox] Done."

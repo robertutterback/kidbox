@@ -87,6 +87,51 @@ To use custom sounds:
 
 If no custom sounds exist, the countdown is silent and the alarm falls back to system beeps.
 
+## Power Button Behavior
+
+The physical power button is configured for safe, deliberate shutdown:
+
+- **Short press (< 2 seconds)**: Shows a Power menu with options:
+  - Shutdown
+  - Reboot
+  - Cancel
+- **Long press (≥ 2 seconds)**: Immediate poweroff (emergency override)
+
+This prevents accidental shutdown from a quick button press while still allowing intentional shutdown through the menu or emergency poweroff via long press.
+
+### Implementation Details
+
+The power button handling uses:
+- **systemd-logind configuration** (`/etc/systemd/logind.conf.d/kidbox-power.conf`) - Tells systemd to ignore short power button presses
+- **Power button watcher service** (`kidbox-power-watch.service`) - Monitors the power button and detects short vs long press
+- **Power menu script** (`/usr/local/bin/kidbox-power-menu.sh`) - Displays the whiptail menu on short press
+
+### Troubleshooting
+
+To view power button monitor logs:
+```bash
+sudo journalctl -u kidbox-power-watch -f
+```
+
+To check power button watcher status:
+```bash
+sudo systemctl status kidbox-power-watch
+```
+
+To temporarily disable power button handling (revert to default immediate shutdown):
+```bash
+sudo systemctl stop kidbox-power-watch
+sudo rm /etc/systemd/logind.conf.d/kidbox-power.conf
+sudo systemctl restart systemd-logind
+```
+
+To re-enable (or after updating):
+```bash
+cd kidbox
+git pull
+sudo ./install.sh
+```
+
 ## Notes
 
 - Set `KID_USER` to set the name of the <kiduser>.
