@@ -59,6 +59,8 @@ APT_PACKAGES=(
   alsa-utils
   chromium-browser
   mpg123
+  console-setup
+  kbd
 )
 
 echo "[kidbox] Installing packages..."
