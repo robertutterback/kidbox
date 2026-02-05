@@ -8,7 +8,7 @@ set -euo pipefail
 #
 # Use --dev flag for local testing (adds Exit option, allows Ctrl+C)
 
-VERSION="1.1"
+VERSION="1.2"
 DEV_MODE=false
 if [[ "${1:-}" == "--dev" ]]; then
   DEV_MODE=true
