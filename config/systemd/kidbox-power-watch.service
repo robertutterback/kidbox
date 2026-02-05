@@ -36,6 +36,9 @@ PrivateTmp=yes
 # Restrict device access to what we need
 DevicePolicy=closed
 DeviceAllow=/dev/input/event* r
+# Power menu script needs TTY access for chvt and whiptail
+DeviceAllow=/dev/tty* rw
+DeviceAllow=/dev/console rw
 
 [Install]
 WantedBy=multi-user.target

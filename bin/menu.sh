@@ -75,6 +75,25 @@ if [[ "$DEV_MODE" == true ]]; then
   MENU_TITLE+=" [dev mode]"
 fi
 
+# Blue theme for whiptail (default window color is gray, which looks bad
+# when the dialog fills the entire terminal)
+export NEWT_COLORS='
+root=white,blue
+window=white,blue
+border=white,blue
+shadow=white,black
+title=white,blue
+textbox=white,blue
+listbox=white,blue
+actlistbox=black,lightgray
+button=black,lightgray
+actbutton=white,blue
+helpline=white,blue
+roottext=white,blue
+entry=black,lightgray
+label=white,blue
+'
+
 while true; do
 
   # Size the menu to fill the terminal
