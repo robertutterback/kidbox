@@ -18,6 +18,7 @@ The script:
 
 import sys
 import time
+import select
 import subprocess
 import logging
 from pathlib import Path
@@ -44,26 +45,25 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def find_power_button_device():
+def find_power_button_devices():
     """
-    Find the input device that generates KEY_POWER events.
-    Returns the InputDevice object or None if not found.
+    Find all input devices that advertise KEY_POWER capability.
+    Many devices advertise KEY_POWER without actually generating it,
+    so we monitor all of them and react to whichever fires.
     """
+    devices = []
     for device_path in list_devices():
         try:
             device = InputDevice(device_path)
             capabilities = device.capabilities()
-
-            # Check if device supports KEY_POWER (ecodes.KEY_POWER = 116)
             if ecodes.EV_KEY in capabilities:
                 if ecodes.KEY_POWER in capabilities[ecodes.EV_KEY]:
-                    logger.info(f"Found power button device: {device.name} at {device_path}")
-                    return device
+                    logger.info(f"Found KEY_POWER device: {device.name} at {device_path}")
+                    devices.append(device)
         except (OSError, PermissionError) as e:
             logger.debug(f"Cannot access {device_path}: {e}")
             continue
-
-    return None
+    return devices
 
 
 def handle_short_press():
@@ -85,57 +85,59 @@ def handle_long_press():
         logger.error(f"Failed to poweroff: {e}")
 
 
-def monitor_power_button(device):
+def monitor_power_button(devices):
     """
-    Monitor power button events and handle short vs long press.
+    Monitor all candidate devices for KEY_POWER events using select().
     """
     press_time = None
     last_release_time = 0
+    device_map = {dev.fd: dev for dev in devices}
 
-    logger.info(f"Monitoring power button on {device.path}")
+    logger.info(f"Monitoring {len(devices)} device(s) for power button events")
 
-    for event in device.read_loop():
-        if event.type == ecodes.EV_KEY and event.code == ecodes.KEY_POWER:
-            event_time = time.time()
-
-            if event.value == 1:  # Key press
-                press_time = event_time
-                logger.debug(f"Power button pressed at {press_time}")
-
-            elif event.value == 0:  # Key release
-                if press_time is None:
-                    logger.debug("Ignoring release without matching press")
+    while True:
+        r, _, _ = select.select(device_map.keys(), [], [])
+        for fd in r:
+            for event in device_map[fd].read():
+                if event.type != ecodes.EV_KEY or event.code != ecodes.KEY_POWER:
                     continue
 
-                # Calculate press duration
-                duration = event_time - press_time
-                logger.debug(f"Power button released after {duration:.2f} seconds")
+                event_time = time.time()
 
-                # Debounce: ignore if too soon after last release
-                if event_time - last_release_time < DEBOUNCE_TIME:
-                    logger.debug(f"Debouncing event (too soon after last release)")
+                if event.value == 1:  # Key press
+                    press_time = event_time
+                    logger.info(f"Power button pressed on {device_map[fd].name}")
+
+                elif event.value == 0:  # Key release
+                    if press_time is None:
+                        continue
+
+                    duration = event_time - press_time
+
+                    # Debounce: ignore if too soon after last release
+                    if event_time - last_release_time < DEBOUNCE_TIME:
+                        press_time = None
+                        continue
+
+                    last_release_time = event_time
+
+                    # Determine short vs long press
+                    if duration >= LONG_PRESS_THRESHOLD:
+                        handle_long_press()
+                    elif duration >= 0.1:
+                        handle_short_press()
+
                     press_time = None
-                    continue
-
-                last_release_time = event_time
-
-                # Determine short vs long press
-                if duration >= LONG_PRESS_THRESHOLD:
-                    handle_long_press()
-                elif duration >= 0.1:  # Minimum press duration to avoid bounces
-                    handle_short_press()
-
-                press_time = None
 
 
 def main():
     """Main entry point."""
     logger.info("Starting kidbox power button monitor")
 
-    # Find power button device
-    device = find_power_button_device()
-    if device is None:
-        logger.error("Could not find power button device")
+    # Find all devices that advertise KEY_POWER
+    devices = find_power_button_devices()
+    if not devices:
+        logger.error("Could not find any device with KEY_POWER capability")
         sys.exit(1)
 
     # Verify power menu script exists
@@ -145,7 +147,7 @@ def main():
 
     # Monitor power button events
     try:
-        monitor_power_button(device)
+        monitor_power_button(devices)
     except KeyboardInterrupt:
         logger.info("Stopped by user")
     except Exception as e:
