@@ -180,4 +180,22 @@ rm -f "$tmp"
 echo "[kidbox] Fixing ownership..."
 chown -R "$KID_USER":"$KID_USER" "$KID_HOME/.xinitrc" "$KID_HOME/.xbindkeysrc" "$KID_HOME/.Xresources" "$KID_BIN_DIR" "$KIDBOX_DIR" "$BASH_PROFILE"
 
+# -------------------------------
+# Sudoers: Allow kid user to shutdown
+# -------------------------------
+echo "[kidbox] Configuring shutdown permissions..."
+SUDOERS_FILE="/etc/sudoers.d/kidbox-shutdown"
+cat > "$SUDOERS_FILE" <<EOF
+# Allow kid user to shutdown without password
+$KID_USER ALL=(ALL) NOPASSWD: /sbin/shutdown -h now
+EOF
+
+# Validate sudoers syntax before enabling it
+if ! visudo -c -f "$SUDOERS_FILE"; then
+  echo "[kidbox] Error: invalid sudoers configuration in $SUDOERS_FILE" >&2
+  rm -f "$SUDOERS_FILE"
+  exit 1
+fi
+chmod 0440 "$SUDOERS_FILE"
+
 echo "[kidbox] Done."
