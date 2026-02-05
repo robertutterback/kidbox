@@ -5,8 +5,18 @@ set -euo pipefail
 # - no Exit option
 # - Esc/cancel returns to menu
 # - Ctrl+C does nothing
+#
+# Use --dev flag for local testing (adds Exit option, allows Ctrl+C)
 
-#trap '' INT
+VERSION="1.1"
+DEV_MODE=false
+if [[ "${1:-}" == "--dev" ]]; then
+  DEV_MODE=true
+fi
+
+if [[ "$DEV_MODE" == false ]]; then
+  trap '' INT
+fi
 
 # Set volume to 100% at startup
 amixer -q sset Master 100% unmute 2>/dev/null || true
@@ -47,22 +57,36 @@ run_x() {
   echo "[$timestamp] Finished: $KID_APP" >> "$LOGFILE"
 }
 
+MENU_TITLE="Girls' Computer (v$VERSION)"
+MENU_ITEMS=(
+  1 "Type Letters (Sally)"
+  2 "Type Letters (Penny)"
+  3 "Draw Pictures"
+  4 "Draw Pictures with Logo Turtle"
+  5 "Write BASIC Programs"
+  6 "Clock"
+  7 "Timer"
+  8 "Stopwatch"
+  9 "Read the Book"
+  10 "Shutdown Computer"
+)
+
+if [[ "$DEV_MODE" == true ]]; then
+  MENU_TITLE+=" [dev mode]"
+fi
+
 while true; do
+
   CHOICE=$(
-    whiptail --title "Girls' Computer" \
-      --menu "Choose something to do" 20 70 10 \
-        1 "Type Letters (Sally)" \
-        2 "Type Letters (Penny)" \
-        3 "Draw Pictures" \
-        4 "Draw Pictures with Logo Turtle" \
-        5 "Write BASIC Programs" \
-        6 "Clock" \
-        7 "Timer" \
-        8 "Stopwatch" \
-        9 "Read the Book" \
+    whiptail --title "$MENU_TITLE" \
+      --menu "Choose something to do" 20 70 11 \
+        "${MENU_ITEMS[@]}" \
       3>&1 1>&2 2>&3
   ) || {
-    # Esc / Cancel: just re-show the menu
+    # Esc / Cancel: exit in dev mode, re-show menu otherwise
+    if [[ "$DEV_MODE" == true ]]; then
+      exit 0
+    fi
     continue
   }
 
@@ -76,5 +100,7 @@ while true; do
     7) run_x "$TIMER_SCRIPT" ;;
     8) run_x "$STOPWATCH_SCRIPT" ;;
     9) run_x chromium-browser --kiosk --app="file://$BOOK_PDF" ;;
+    10) sudo shutdown -h now ;;
+    0) exit 0 ;;
   esac
 done
