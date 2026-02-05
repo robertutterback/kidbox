@@ -10,8 +10,8 @@ set -euo pipefail
 #   - Reboot: systemctl reboot
 #   - Cancel: exit (return to current activity)
 #
-# The menu is displayed on VT1 (the console) to ensure it's visible
-# whether the user is in the console menu or in an X session.
+# The menu is displayed on VT2 (a dedicated, otherwise unused VT) to avoid
+# conflicting with the main menu on VT1 for keyboard input.
 
 # Required when running from systemd (no terminal environment)
 export TERM=linux
@@ -37,14 +37,14 @@ label=white,blue
 # Remember which VT we're on so we can return on Cancel
 ORIG_VT=$(cat /sys/class/tty/tty0/active 2>/dev/null | grep -o '[0-9]*$') || ORIG_VT=""
 
-# Switch to VT1 to ensure menu is visible
-chvt 1
+# Switch to VT2 (dedicated for power menu, avoids input conflict with main menu on VT1)
+chvt 2
 
-# Connect all fds to tty1 so whiptail can render and read input.
+# Connect all fds to tty2 so whiptail can render and read input.
 # (When launched from systemd, there is no controlling terminal.)
-exec </dev/tty1 >/dev/tty1 2>&1
+exec </dev/tty2 >/dev/tty2 2>&1
 
-# Show power menu on tty1
+# Show power menu on tty2
 CHOICE=$(
   whiptail --title "Power Button" \
     --menu "What would you like to do?" 12 50 3 \
