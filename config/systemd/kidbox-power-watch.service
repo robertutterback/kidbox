@@ -33,12 +33,8 @@ ProtectHome=yes
 ReadWritePaths=
 # Restrict filesystem access
 PrivateTmp=yes
-# Restrict device access to what we need
-DevicePolicy=closed
-DeviceAllow=/dev/input/event* r
-# Power menu script needs TTY access for chvt and whiptail
-DeviceAllow=/dev/tty* rw
-DeviceAllow=/dev/console rw
+# Allow device access (input devices for evdev, TTY/console for power menu)
+DevicePolicy=auto
 
 [Install]
 WantedBy=multi-user.target
