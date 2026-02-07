@@ -76,7 +76,10 @@ if [[ "$DEV_MODE" == true ]]; then
 fi
 
 # Blue theme for whiptail (default window color is gray, which looks bad
-# when the dialog fills the entire terminal)
+# when the dialog fills the entire terminal).
+# Button colors match the background to hide the Ok button; whiptail has
+# --nocancel to remove Cancel but no --nook equivalent, so this is the
+# only way to hide it.
 export NEWT_COLORS='
 root=white,blue
 window=white,blue
@@ -86,7 +89,7 @@ title=white,blue
 textbox=white,blue
 listbox=white,blue
 actlistbox=black,lightgray
-button=black,lightgray
+button=white,blue
 actbutton=white,blue
 helpline=white,blue
 roottext=white,blue
@@ -102,7 +105,7 @@ while true; do
   MENU_ROWS=$(( TERM_LINES - 8 ))
 
   CHOICE=$(
-    whiptail --title "$MENU_TITLE" \
+    whiptail --title "$MENU_TITLE" --nocancel \
       --menu "Choose something to do" "$TERM_LINES" "$TERM_COLS" "$MENU_ROWS" \
         "${MENU_ITEMS[@]}" \
       3>&1 1>&2 2>&3

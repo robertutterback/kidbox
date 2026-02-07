@@ -7,7 +7,6 @@ set -euo pipefail
 #
 # Menu options:
 #   - Shutdown: systemctl poweroff
-#   - Reboot: systemctl reboot
 #   - Cancel: exit (return to current activity)
 #
 # The menu is displayed on VT12 (a dedicated, otherwise unused VT) to avoid
@@ -16,7 +15,10 @@ set -euo pipefail
 # Required when running from systemd (no terminal environment)
 export TERM=linux
 
-# Blue theme for whiptail
+# Blue theme for whiptail.
+# Button colors match the background to hide the Ok button; whiptail has
+# --nocancel to remove Cancel but no --nook equivalent, so this is the
+# only way to hide it.
 export NEWT_COLORS='
 root=white,blue
 window=white,blue
@@ -26,7 +28,7 @@ title=white,blue
 textbox=white,blue
 listbox=white,blue
 actlistbox=black,lightgray
-button=black,lightgray
+button=white,blue
 actbutton=white,blue
 helpline=white,blue
 roottext=white,blue
@@ -46,11 +48,10 @@ exec </dev/tty12 >/dev/tty12 2>&1
 
 # Show power menu on tty12
 CHOICE=$(
-  whiptail --title "Power Button" \
-    --menu "What would you like to do?" 12 50 3 \
+  whiptail --title "Power Button" --nocancel \
+    --menu "What would you like to do?" 12 50 2 \
       1 "Shutdown" \
-      2 "Reboot" \
-      3 "Cancel" \
+      2 "Cancel" \
     3>&1 1>&2 2>&3
 ) || {
   # User pressed Esc - return to original VT
@@ -61,9 +62,6 @@ CHOICE=$(
 case "$CHOICE" in
   1)
     systemctl poweroff
-    ;;
-  2)
-    systemctl reboot
     ;;
   *)
     # Cancel or unknown - return to original VT
