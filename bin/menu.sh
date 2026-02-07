@@ -86,7 +86,7 @@ title=white,blue
 textbox=white,blue
 listbox=white,blue
 actlistbox=black,lightgray
-button=black,lightgray
+button=white,blue
 actbutton=white,blue
 helpline=white,blue
 roottext=white,blue
@@ -102,7 +102,7 @@ while true; do
   MENU_ROWS=$(( TERM_LINES - 8 ))
 
   CHOICE=$(
-    whiptail --title "$MENU_TITLE" \
+    whiptail --title "$MENU_TITLE" --nocancel \
       --menu "Choose something to do" "$TERM_LINES" "$TERM_COLS" "$MENU_ROWS" \
         "${MENU_ITEMS[@]}" \
       3>&1 1>&2 2>&3

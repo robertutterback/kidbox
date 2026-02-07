@@ -26,7 +26,7 @@ title=white,blue
 textbox=white,blue
 listbox=white,blue
 actlistbox=black,lightgray
-button=black,lightgray
+button=white,blue
 actbutton=white,blue
 helpline=white,blue
 roottext=white,blue
@@ -46,7 +46,7 @@ exec </dev/tty12 >/dev/tty12 2>&1
 
 # Show power menu on tty12
 CHOICE=$(
-  whiptail --title "Power Button" \
+  whiptail --title "Power Button" --nocancel \
     --menu "What would you like to do?" 12 50 3 \
       1 "Shutdown" \
       2 "Reboot" \
