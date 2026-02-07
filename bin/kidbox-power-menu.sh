@@ -7,7 +7,6 @@ set -euo pipefail
 #
 # Menu options:
 #   - Shutdown: systemctl poweroff
-#   - Reboot: systemctl reboot
 #   - Cancel: exit (return to current activity)
 #
 # The menu is displayed on VT12 (a dedicated, otherwise unused VT) to avoid
@@ -47,10 +46,9 @@ exec </dev/tty12 >/dev/tty12 2>&1
 # Show power menu on tty12
 CHOICE=$(
   whiptail --title "Power Button" --nocancel \
-    --menu "What would you like to do?" 12 50 3 \
+    --menu "What would you like to do?" 12 50 2 \
       1 "Shutdown" \
-      2 "Reboot" \
-      3 "Cancel" \
+      2 "Cancel" \
     3>&1 1>&2 2>&3
 ) || {
   # User pressed Esc - return to original VT
@@ -61,9 +59,6 @@ CHOICE=$(
 case "$CHOICE" in
   1)
     systemctl poweroff
-    ;;
-  2)
-    systemctl reboot
     ;;
   *)
     # Cancel or unknown - return to original VT
