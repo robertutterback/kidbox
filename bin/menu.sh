@@ -8,7 +8,7 @@ set -euo pipefail
 #
 # Use --dev flag for local testing (adds Exit option, allows Ctrl+C)
 
-VERSION="1.2"
+VERSION="1.3"
 DEV_MODE=false
 if [[ "${1:-}" == "--dev" ]]; then
   DEV_MODE=true
@@ -33,6 +33,7 @@ LOGO_WELCOME="$KIDBOX_DIR/logo/welcome.lg"
 CLOCK_SCRIPT="$HOME/bin/clock.sh"
 TIMER_SCRIPT="$HOME/bin/timer.sh"
 STOPWATCH_SCRIPT="$HOME/bin/stopwatch.sh"
+DICTIONARY_SCRIPT="$HOME/bin/dictionary.sh"
 BOOK_PDF="$KIDBOX_DIR/kidbook.pdf"
 
 # Function to run X programs with logging
@@ -67,8 +68,9 @@ MENU_ITEMS=(
   6 "Clock"
   7 "Timer"
   8 "Stopwatch"
-  9 "Read the Book"
-  10 "Shutdown Computer"
+  9 "Dictionary"
+  10 "Read the Book"
+  11 "Shutdown Computer"
 )
 
 if [[ "$DEV_MODE" == true ]]; then
@@ -126,8 +128,9 @@ while true; do
     6) run_x "$CLOCK_SCRIPT" ;;
     7) run_x "$TIMER_SCRIPT" ;;
     8) run_x "$STOPWATCH_SCRIPT" ;;
-    9) run_x chromium-browser --kiosk --app="file://$BOOK_PDF" ;;
-    10) sudo shutdown -h now ;;
+    9) run_x "$DICTIONARY_SCRIPT" ;;
+    10) run_x chromium-browser --kiosk --app="file://$BOOK_PDF" ;;
+    11) sudo shutdown -h now ;;
     0) exit 0 ;;
   esac
 done
