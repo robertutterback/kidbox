@@ -56,7 +56,7 @@ kill $MUSIC_PID 2>/dev/null || true
 # Play alarm sound (looping)
 ALARM_SOUND="$CONTENT_DIR/alarm.mp3"
 ALARM_PID=""
-if [ -f "$TIMER_SOUND" ] && command -v mpg123 >/dev/null 2>&1; then
+if [ -f "$ALARM_SOUND" ] && command -v mpg123 >/dev/null 2>&1; then
     mpg123 -q --loop -1 "$ALARM_SOUND" &
     ALARM_PID=$!
 fi

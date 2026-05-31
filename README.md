@@ -93,7 +93,6 @@ The physical power button is configured for safe, deliberate shutdown:
 
 - **Short press (< 2 seconds)**: Shows a Power menu with options:
   - Shutdown
-  - Reboot
   - Cancel
 - **Long press (≥ 2 seconds)**: Immediate poweroff (emergency override)
 

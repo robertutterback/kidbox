@@ -233,7 +233,7 @@ echo "[kidbox] Restarting systemd-logind to apply power button configuration..."
 systemctl restart systemd-logind.service
 
 echo "[kidbox] Power button configuration complete."
-echo "[kidbox] - Short press: shows Power menu (Shutdown/Reboot/Cancel)"
+echo "[kidbox] - Short press: shows Power menu (Shutdown/Cancel)"
 echo "[kidbox] - Long press (2+ seconds): immediate poweroff"
 
 echo "[kidbox] Done."

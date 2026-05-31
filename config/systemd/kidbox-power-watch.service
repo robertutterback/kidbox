@@ -5,7 +5,7 @@
 # and enabled to start at boot.
 #
 # Purpose: Monitor physical power button and distinguish short vs long press
-#   - Short press: show power menu (shutdown/reboot/cancel)
+#   - Short press: show power menu (shutdown/cancel)
 #   - Long press: immediate poweroff (emergency override)
 
 [Unit]
