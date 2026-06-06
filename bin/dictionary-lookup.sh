@@ -37,7 +37,7 @@ while true; do
 
   # Look up the word
   if output="$(dict -d "$DB" -- "$word" 2>/dev/null)" && [[ -n "$output" ]]; then
-    echo "$output"
+    printf '%s\n' "$output" | more
   else
     echo "    \"$word\" was not found."
     echo
