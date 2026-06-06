@@ -26,7 +26,7 @@ while true; do
   read -r -p "    Word: " word || exit 0
 
   # Strip whitespace
-  word="$(echo "$word" | tr -d '[:space:]')"
+  word="${word//[[:space:]]/}"
 
   if [[ -z "$word" ]]; then
     break
