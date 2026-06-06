@@ -48,7 +48,7 @@ while true; do
                    | sed -E 's/^[[:space:]]*'"$DB"':[[:space:]]*//' \
                    | head -20)"
     if [[ -n "$suggestions" ]]; then
-      echo "$suggestions" | sed 's/^/        /'
+      printf '%s\n' "$suggestions" | sed 's/^/        /'
     else
       echo "        (no similar words found)"
     fi
