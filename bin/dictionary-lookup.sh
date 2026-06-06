@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -uo pipefail
+set -euo pipefail
 
 # Interactive dictionary loop. Asks for a word, looks it up in the local
 # dictd server (gcide database), and shows the definition. If the word
