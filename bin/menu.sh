@@ -68,9 +68,8 @@ MENU_ITEMS=(
   6 "Clock"
   7 "Timer"
   8 "Stopwatch"
-  9 "Dictionary"
-  10 "Read the Book"
-  11 "Shutdown Computer"
+  9 "Read the Book"
+  10 "Shutdown Computer"
 )
 
 if [[ "$DEV_MODE" == true ]]; then
@@ -128,9 +127,8 @@ while true; do
     6) run_x "$CLOCK_SCRIPT" ;;
     7) run_x "$TIMER_SCRIPT" ;;
     8) run_x "$STOPWATCH_SCRIPT" ;;
-    9) run_x "$DICTIONARY_SCRIPT" ;;
-    10) run_x chromium-browser --kiosk --app="file://$BOOK_PDF" ;;
-    11) sudo shutdown -h now ;;
+    9) run_x chromium-browser --kiosk --app="file://$BOOK_PDF" ;;
+    10) sudo shutdown -h now ;;
     0) exit 0 ;;
   esac
 done
