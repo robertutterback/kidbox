@@ -7,7 +7,7 @@ set -euo pipefail
 #
 # Press Enter on a blank line to quit back to the menu.
 
-DB="gcide"
+DB="wn"
 
 print_header() {
   echo

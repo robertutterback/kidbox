@@ -64,7 +64,7 @@ APT_PACKAGES=(
   python3-evdev
   dictd
   dict
-  dict-gcide
+  dict-wn
 )
 
 echo "[kidbox] Installing packages..."
