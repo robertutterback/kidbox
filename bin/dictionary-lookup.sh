@@ -38,7 +38,11 @@ while true; do
   # Look up the word. On a hit, dict prints the definition; on a miss it
   # prints "perhaps you mean:" with nearby words on its own. The || true
   # keeps set -e from killing the loop on a miss (dict exits non-zero).
-  dict -d "$DB" -- "$word" || true
+  #
+  # --host localhost pins lookups to the local dictd daemon. Without it the
+  # dict client falls back to its packaged public servers (dict.org), which
+  # on an offline Pi means every miss hangs on a network timeout.
+  dict --host localhost -d "$DB" -- "$word" || true
 
   echo
   echo
