@@ -14,7 +14,7 @@ MVP Activities:
 - Clock: Custom HTML/CSS/JS analog + digital (Chromium kiosk mode)
 - Timer: Visual countdown with looping background music and alarm
 - Stopwatch: Count-up timer
-- Dictionary: Offline word lookup using `dictd` + WordNet; suggests nearby words on a typo
+- Dictionary: Offline word lookup with kid-readable definitions, plus spelling suggestions on a miss
 - Book: View the instruction book (Chromium kiosk mode - evince was tried but took ~60s to load, xpdf is too hard for kids)
 - Websites: A configurable list of approved sites (Chromium kiosk mode, no address bar, machine-wide allowlist)
 
@@ -88,6 +88,54 @@ To use custom sounds:
 3. The timer will automatically use them
 
 If no custom sounds exist, the countdown is silent and the alarm falls back to system beeps.
+
+## Dictionary
+
+`content/dictionary.txt` is a plain tab-separated file — word, part of speech,
+definition — with about 48,700 words. Lookup is one pass of `awk`, and a miss
+runs `bin/dictionary-suggest.py` to offer close spellings. No daemon, no
+`dict` client, no network: the earlier `dictd` version could fall back to
+public servers at dict.org and hang on every typo.
+
+### Where the definitions come from
+
+Simple English Wiktionary, which is written by hand for people learning
+English. That matters more than it sounds: WordNet defines a cat as "a small
+domesticated carnivorous mammal", while Simple English Wiktionary says "A cat
+is a domestic animal often kept as a pet; it has whiskers and likes to chase
+mice." Debian has no kid-friendly dictionary package — the alternatives are
+WordNet, Webster's 1913, and three glossaries of computing acronyms.
+
+Definitions are used under **CC BY-SA 4.0**, so the derived file is under the
+same licence. Attribution is in the file header. The repo has no `LICENSE`
+file yet; if you add one, this file is the constraint to check first.
+
+### Rebuilding
+
+```bash
+./tools/build-dictionary.py
+```
+
+Downloads the source data (~6MB) and rewrites `content/dictionary.txt`. Run it
+on a development machine — the built file is committed, so the Pi never needs
+the source data or a build step.
+
+The build filters out proper nouns, non-alphabetic entries, senses Wiktionary
+itself labels Vulgar/Slang/Sex, and any word or definition mentioning a term
+from a standard profanity list. That last filter matters: filtering headwords
+alone still let a kid meet a blocked word inside the definition of an innocent
+one. Roughly 1,100 entries are dropped.
+
+This is a filter, not a guarantee. The point of shipping a plain text file is
+that you can audit it:
+
+```bash
+cut -f1 content/dictionary.txt | sort -u | less   # every word in it
+grep -i '<TAB>.*something' content/dictionary.txt # what a definition says
+```
+
+Delete any line you object to. Nothing needs rebuilding — the lookup script
+reads the file as it is.
 
 ## Websites
 
