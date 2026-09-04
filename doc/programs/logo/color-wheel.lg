@@ -1,0 +1,2 @@
+setpensize [3 3]
+repeat 6 [setpc repcount fd 100 bk 100 rt 60]

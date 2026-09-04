@@ -1,0 +1,13 @@
+setpensize [5 5]
+setpc 4
+fd 80
+rt 90
+setpc 2
+fd 80
+rt 90
+setpc 1
+fd 80
+rt 90
+setpc 13
+fd 80
+rt 90

@@ -1,0 +1,8 @@
+to trispiral :size
+  if :size > 150 [stop]
+  fd :size
+  rt 120
+  trispiral :size + 5
+end
+
+trispiral 5

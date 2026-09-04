@@ -1,0 +1,11 @@
+to drive
+  make "key readchar
+  if :key = "w [fd 10]
+  if :key = "s [bk 10]
+  if :key = "a [lt 15]
+  if :key = "d [rt 15]
+  if :key = "q [stop]
+  drive
+end
+
+drive

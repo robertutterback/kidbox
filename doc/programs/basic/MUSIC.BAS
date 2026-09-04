@@ -1,0 +1,2 @@
+10 PLAY "C C G G A A G2"
+20 PLAY "F F E E D D C2"

@@ -1,0 +1,4 @@
+print [Hello!]
+print sum 2 3
+print 7 * 6
+print [I am a turtle.]

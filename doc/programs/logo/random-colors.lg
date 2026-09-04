@@ -1,0 +1,2 @@
+setpensize [3 3]
+repeat 30 [setpc 1 + random 6 fd 40 rt random 90]

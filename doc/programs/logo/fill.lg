@@ -1,0 +1,7 @@
+repeat 3 [fd 100 rt 120]
+pu
+rt 30
+fd 30
+pd
+setpc 4
+fill

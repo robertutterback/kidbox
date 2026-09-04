@@ -1,0 +1,6 @@
+to wander
+  fd random 30
+  rt random 360
+end
+
+repeat 100 [wander]

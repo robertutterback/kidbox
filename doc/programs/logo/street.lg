@@ -1,0 +1,22 @@
+to square :size
+  repeat 4 [fd :size rt 90]
+end
+
+to triangle :size
+  repeat 3 [fd :size rt 120]
+end
+
+to house :size
+  square :size
+  fd :size
+  rt 30
+  triangle :size
+  lt 30
+  bk :size
+end
+
+to street
+  repeat 3 [house 60 pu rt 90 fd 80 lt 90 pd]
+end
+
+street

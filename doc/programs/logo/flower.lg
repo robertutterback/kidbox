@@ -1,0 +1,9 @@
+to square :size
+  repeat 4 [fd :size rt 90]
+end
+
+to flower :size
+  repeat 12 [square :size rt 30]
+end
+
+flower 80

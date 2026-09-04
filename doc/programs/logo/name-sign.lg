@@ -1,0 +1,4 @@
+setpensize [3 3]
+setpc 1
+setlabelheight 40
+label [HI THERE]

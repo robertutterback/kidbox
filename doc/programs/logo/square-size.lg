@@ -1,0 +1,8 @@
+to square :size
+  repeat 4 [fd :size rt 90]
+end
+
+square 30
+square 60
+square 90
+square 120
