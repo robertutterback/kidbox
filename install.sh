@@ -65,6 +65,7 @@ APT_PACKAGES=(
   dictd
   dict
   dict-wn
+  xdotool
 )
 
 echo "[kidbox] Installing packages..."
@@ -101,6 +102,15 @@ install -m 0755 "$REPO_ROOT/config/xinitrc" "$KID_HOME/.xinitrc"
 # -------------------------------
 echo "[kidbox] Installing .xbindkeysrc..."
 install -m 0755 "$REPO_ROOT/config/xbindkeysrc" "$KID_HOME/.xbindkeysrc"
+
+# -------------------------------
+# Install .xbindkeysrc-web (extra bindings, loaded only by site.sh)
+# -------------------------------
+echo "[kidbox] Installing .xbindkeysrc-web..."
+install -m 0644 "$REPO_ROOT/config/xbindkeysrc-web" "$KID_HOME/.xbindkeysrc-web"
+
+# Throwaway browser profiles live here; site.sh wipes its own on each launch.
+install -d -m 0755 "$KID_HOME/.kidbox-browser"
 
 # -------------------------------
 # Install .Xresources
@@ -147,6 +157,28 @@ if [[ -f "$REPO_ROOT/content/alarm.mp3" ]]; then
 fi
 
 # -------------------------------
+# Website list + Chromium allowlist
+#
+# sites.conf is the single source of truth: menu.sh reads it for the website
+# menu items, and kidbox-gen-policy.py turns it into the browser's managed
+# policy. It is not overwritten on reinstall, since the live file is the one
+# that has been edited to add sites.
+# -------------------------------
+echo "[kidbox] Installing website list..."
+
+install -d -m 0755 /etc/kidbox
+if [[ ! -f /etc/kidbox/sites.conf ]]; then
+  install -m 0644 "$REPO_ROOT/config/sites.conf" /etc/kidbox/sites.conf
+elif ! cmp -s "$REPO_ROOT/config/sites.conf" /etc/kidbox/sites.conf; then
+  echo "[kidbox] Keeping existing /etc/kidbox/sites.conf (differs from the repo copy)."
+  echo "[kidbox] To see what changed: diff /etc/kidbox/sites.conf $REPO_ROOT/config/sites.conf"
+fi
+
+echo "[kidbox] Generating Chromium policy..."
+install -m 0755 "$REPO_ROOT/bin/kidbox-gen-policy.py" "/usr/local/bin/kidbox-gen-policy.py"
+/usr/local/bin/kidbox-gen-policy.py
+
+# -------------------------------
 # Wire menu autostart via .bash_profile snippet
 # Idempotent using markers.
 # -------------------------------
@@ -184,7 +216,7 @@ rm -f "$tmp"
 # Ownership
 # -------------------------------
 echo "[kidbox] Fixing ownership..."
-chown -R "$KID_USER":"$KID_USER" "$KID_HOME/.xinitrc" "$KID_HOME/.xbindkeysrc" "$KID_HOME/.Xresources" "$KID_BIN_DIR" "$KIDBOX_DIR" "$BASH_PROFILE"
+chown -R "$KID_USER":"$KID_USER" "$KID_HOME/.xinitrc" "$KID_HOME/.xbindkeysrc" "$KID_HOME/.xbindkeysrc-web" "$KID_HOME/.Xresources" "$KID_HOME/.kidbox-browser" "$KID_BIN_DIR" "$KIDBOX_DIR" "$BASH_PROFILE"
 
 # -------------------------------
 # Sudoers: Allow kid user to shutdown
