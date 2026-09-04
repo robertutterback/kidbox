@@ -143,7 +143,7 @@ Website menu items are defined in `/etc/kidbox/sites.conf`. Each line is
 either a menu item or an allowlist entry:
 
 ```
-SITE|IXL (School Practice)|https://www.ixl.com/|ixl.com
+SITE|IXL (School Practice)|https://www.ixl.com/signin|ixl.com
 ALLOW|starfall.com,abcya.com
 ```
 
