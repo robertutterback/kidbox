@@ -8,7 +8,7 @@ set -euo pipefail
 #
 # Use --dev flag for local testing (adds Exit option, allows Ctrl+C)
 
-VERSION="1.2"
+VERSION="1.3"
 DEV_MODE=false
 if [[ "${1:-}" == "--dev" ]]; then
   DEV_MODE=true
@@ -17,10 +17,6 @@ fi
 if [[ "$DEV_MODE" == false ]]; then
   trap '' INT
 fi
-
-# Set volume to 100% at startup
-amixer -q sset Master 100% unmute 2>/dev/null || true
-amixer -q sset PCM 100% unmute 2>/dev/null || true
 
 KIDBOX_DIR="$HOME/kidbox"
 LOG_DIR="$HOME/.kidbox-logs"
@@ -34,6 +30,8 @@ CLOCK_SCRIPT="$HOME/bin/clock.sh"
 TIMER_SCRIPT="$HOME/bin/timer.sh"
 STOPWATCH_SCRIPT="$HOME/bin/stopwatch.sh"
 BOOK_PDF="$KIDBOX_DIR/kidbook.pdf"
+SITE_SCRIPT="$HOME/bin/site.sh"
+SITES_CONF="${KIDBOX_SITES_CONF:-/etc/kidbox/sites.conf}"
 
 # Function to run X programs with logging
 # Usage: run_x <program> [args...]
@@ -45,6 +43,11 @@ run_x() {
 
   local timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
   echo "[$timestamp] Starting: $*" >> "$LOGFILE"
+
+  # Reset the volume on every launch: the timer alarm needs it loud, and
+  # site.sh turns it down for websites only.
+  amixer -q sset Master 100% unmute 2>/dev/null || true
+  amixer -q sset PCM 100% unmute 2>/dev/null || true
 
   export KID_APP="$1"
   shift || true
@@ -68,8 +71,35 @@ MENU_ITEMS=(
   7 "Timer"
   8 "Stopwatch"
   9 "Read the Book"
-  10 "Shutdown Computer"
 )
+
+# Website items come from $SITES_CONF, read fresh every time the menu is drawn
+# so that adding or removing a site is a one-line edit with no reinstall. The
+# browser allowlist is generated from the same file by kidbox-gen-policy.py.
+#
+# Tags start at 11 and Shutdown sits at 20, so adding a website never shifts
+# the number of anything a kid may have memorised.
+declare -A SITE_URL=()
+declare -A SITE_SLUG=()
+site_tag=11
+
+if [[ -r "$SITES_CONF" ]]; then
+  while IFS='|' read -r kind name url _rest; do
+    [[ "${kind// /}" == "SITE" ]] || continue
+    [[ -n "${name:-}" && -n "${url:-}" ]] || continue
+
+    # Slug names the throwaway browser profile directory.
+    slug="$(printf '%s' "$name" | tr '[:upper:]' '[:lower:]' \
+              | tr -cs '[:alnum:]' '-' | sed 's/^-//; s/-$//')"
+
+    MENU_ITEMS+=( "$site_tag" "$name" )
+    SITE_URL[$site_tag]="$url"
+    SITE_SLUG[$site_tag]="$slug"
+    site_tag=$(( site_tag + 1 ))
+  done < "$SITES_CONF"
+fi
+
+MENU_ITEMS+=( 20 "Shutdown Computer" )
 
 if [[ "$DEV_MODE" == true ]]; then
   MENU_TITLE+=" [dev mode]"
@@ -127,7 +157,14 @@ while true; do
     7) run_x "$TIMER_SCRIPT" ;;
     8) run_x "$STOPWATCH_SCRIPT" ;;
     9) run_x chromium-browser --kiosk --app="file://$BOOK_PDF" ;;
-    10) sudo shutdown -h now ;;
+    20) sudo shutdown -h now ;;
     0) exit 0 ;;
+    *)
+      # Website tags are assigned above, so look the choice up instead of
+      # hard-coding a case per site.
+      if [[ -n "${SITE_URL[$CHOICE]:-}" ]]; then
+        run_x "$SITE_SCRIPT" "${SITE_URL[$CHOICE]}" "${SITE_SLUG[$CHOICE]}"
+      fi
+      ;;
   esac
 done

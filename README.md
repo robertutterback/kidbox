@@ -15,6 +15,7 @@ MVP Activities:
 - Timer: Visual countdown with looping background music and alarm
 - Stopwatch: Count-up timer
 - Book: View the instruction book (Chromium kiosk mode - evince was tried but took ~60s to load, xpdf is too hard for kids)
+- Websites: A configurable list of approved sites (Chromium kiosk mode, no address bar, machine-wide allowlist)
 
 Intentionally simple and explicit. The idea is that the only way to
 use such a computer is to start understanding how it works.
@@ -86,6 +87,67 @@ To use custom sounds:
 3. The timer will automatically use them
 
 If no custom sounds exist, the countdown is silent and the alarm falls back to system beeps.
+
+## Websites
+
+Website menu items are defined in `/etc/kidbox/sites.conf`. Each line is
+either a menu item or an allowlist entry:
+
+```
+SITE|IXL (School Practice)|https://www.ixl.com/|ixl.com
+ALLOW|starfall.com,abcya.com
+```
+
+`menu.sh` reads the file every time the menu is drawn, so adding or removing a
+`SITE` line takes effect immediately. Changing which domains are *reachable*
+means regenerating the browser policy:
+
+```bash
+sudo kidbox-gen-policy.py
+```
+
+`install.sh` does this for you, and will not overwrite an edited
+`sites.conf` (it prints a diff hint if the repo copy has changed).
+
+### How the lockdown works
+
+Sites open with `chromium-browser --kiosk --app=URL`, which means no address
+bar and no window frame. That is a UI restriction, not a boundary — it stops
+typing a URL, not clicking a link.
+
+The boundary is a Chromium managed policy generated from `sites.conf`:
+`URLBlocklist: ["*"]` plus an allowlist of the configured domains. It is
+written to both `/etc/chromium/policies/managed/` and
+`/etc/chromium-browser/policies/managed/`, because the directory name depends
+on the browser build and Raspberry Pi OS and Debian disagree about it.
+
+The policy applies to **every** Chromium launch on the machine, not just
+website menu items — there is no state in which the allowlist is off. This is
+why `file://*` is allowlisted: the Clock and the Book are `file://` URLs and
+would otherwise be blocked. The policy also disables downloads, printing,
+devtools, popups, sign-in, sync, the password manager, autofill, and camera,
+mic and geolocation access.
+
+To inspect what the browser actually loaded, open `chrome://policy` **as your
+own user** (that URL is blocked for the kid user).
+
+### Notes and known limits
+
+- **Browsing is stateless.** Each launch wipes its profile under
+  `~/.kidbox-browser/<slug>/`, so no cookies, logins or cache survive a
+  session — nothing accumulates on the SD card.
+- **Volume drops to 60%** for websites, since they autoplay and 100% is
+  meant for the timer alarm. `run_x` resets it to 100% before every launch.
+- **Esc goes back.** Kiosk + app mode has no back button, so a kid who
+  clicks a link to a blocked domain would be stranded on the block page.
+  `~/.xbindkeysrc-web` maps Esc to Alt+Left, and is loaded only while a
+  website is open. `Alt+Left` works natively too.
+- **Asset domains.** If pages render broken, Chromium is applying the
+  blocklist to subresources and not just navigation. The fix is to add the
+  CDN domains a site pulls from to an `ALLOW` line; `sites.conf` ships with
+  the common ones.
+- **Search engines and video sites are deliberately absent.** A search engine
+  reaches everything, which defeats the allowlist.
 
 ## Power Button Behavior
 

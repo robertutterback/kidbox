@@ -1,0 +1,7 @@
+# Key bindings that apply only while a website is open (see bin/site.sh).
+# The main ~/.xbindkeysrc is loaded too, so Ctrl+Alt+Backspace still works.
+
+# Esc goes back, the same way Esc backs out of the menu. Kiosk + app mode
+# shows no back button, and a blocked page is otherwise a dead end.
+"xdotool key --clearmodifiers alt+Left"
+  Escape
