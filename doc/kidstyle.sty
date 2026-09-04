@@ -1,0 +1,303 @@
+%% kidstyle.sty — visual style for The Kid Computer booklet.
+%%
+%% Everything here is presentation. kidbook.tex should stay readable as plain
+%% text so the writing can be edited without fighting the layout.
+%%
+%% Engine: pdflatex (keeps `make` a one-liner; no fontspec needed).
+
+\ProvidesPackage{kidstyle}[2026/09/04 The Kid Computer booklet style]
+
+\RequirePackage[T1]{fontenc}
+\RequirePackage{microtype}
+\RequirePackage{xcolor}
+\RequirePackage{tikz}
+\RequirePackage{ragged2e}
+\RequirePackage{enumitem}
+\RequirePackage{fvextra}
+\RequirePackage{needspace}
+\RequirePackage[most]{tcolorbox}
+\RequirePackage{scrlayer-scrpage}
+\RequirePackage{fontawesome5}
+
+% Nunito: rounded humanist sans. Lining figures on purpose — old-style
+% numerals sit below the baseline, which is exactly the wrong thing to show
+% a kid who is still learning what a 3 looks like.
+\RequirePackage[mainfont,lining,extrabold]{nunito}
+% varqu gives upright quotes, varl a curly l. Both matter when a kid is
+% copying "HI!" or a 1 vs l out of the book character by character.
+\RequirePackage[varqu,varl]{inconsolata}
+% nunito's `mainfont` only claims \rmdefault; point \sffamily at it too so a
+% stray \sffamily cannot drop us back into Computer Modern Sans.
+\AtBeginDocument{\renewcommand*{\sfdefault}{\rmdefault}}
+
+\RequirePackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=kidblue,urlcolor=kidblue,
+            pdftitle={The Kid Computer},pdfauthor={Sally \& Penny Utterback}}
+
+% ---------------------------------------------------------------------------
+% Palette
+% ---------------------------------------------------------------------------
+% Chapter accents rotate through these. They differ in lightness as well as
+% hue so the book still reads on a black-and-white printer.
+
+\definecolor{kidink}{HTML}{2B2B33}
+\definecolor{kidred}{HTML}{D9432F}
+\definecolor{kidorange}{HTML}{E07B10}
+\definecolor{kidgreen}{HTML}{2E8B45}
+\definecolor{kidblue}{HTML}{3B6099}  % sampled from the cover art's screen
+\definecolor{kidpurple}{HTML}{6E4A9E}
+\definecolor{kidteal}{HTML}{0E827B}
+
+\colorlet{kidaccent}{kidblue}
+
+\newcounter{kidhue}
+\newcommand*{\kidnextcolor}{%
+  \stepcounter{kidhue}%
+  \ifnum\value{kidhue}>6\relax\setcounter{kidhue}{1}\fi
+  \ifcase\value{kidhue}\or
+    \xglobal\colorlet{kidaccent}{kidred}\or
+    \xglobal\colorlet{kidaccent}{kidorange}\or
+    \xglobal\colorlet{kidaccent}{kidgreen}\or
+    \xglobal\colorlet{kidaccent}{kidblue}\or
+    \xglobal\colorlet{kidaccent}{kidpurple}\or
+    \xglobal\colorlet{kidaccent}{kidteal}%
+  \fi
+}
+
+% ---------------------------------------------------------------------------
+% Text block
+% ---------------------------------------------------------------------------
+% Ragged right: even word spacing beats an even right edge for a beginning
+% reader, and it kills hyphenation across line breaks.
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.65em}
+\linespread{1.10}
+\RaggedRight
+\frenchspacing
+
+\setlist{leftmargin=1.4em,itemsep=0.25em,parsep=0pt,topsep=0.35em}
+\setlist[itemize,1]{label=\textcolor{kidaccent}{\raisebox{0.1ex}{\scriptsize\faCircle}}}
+
+% ---------------------------------------------------------------------------
+% Headings
+% ---------------------------------------------------------------------------
+
+\addtokomafont{disposition}{\rmfamily}
+\setkomafont{chapter}{\bfseries\LARGE}
+\setkomafont{section}{\bfseries\large\color{kidaccent}}
+\setkomafont{chapterentry}{\bfseries\large}
+% Keep the whole contents list on one page, and stop it hyphenating titles.
+\DeclareTOCStyleEntry[beforeskip=0.2em]{chapter}{chapter}
+\DeclareTOCStyleEntry[beforeskip=0pt,indent=1.6em,numwidth=2.1em,
+  entryformat=\footnotesize,pagenumberformat=\footnotesize]{section}{section}
+\AfterTOCHead{\hyphenpenalty=10000\exhyphenpenalty=10000}
+
+\RedeclareSectionCommand[beforeskip=0pt,afterskip=1.2\baselineskip]{chapter}
+\RedeclareSectionCommand[beforeskip=-1.6\baselineskip,afterskip=0.45\baselineskip]{section}
+
+% An icon rides in the chapter badge. Chapters set it just before \chapter.
+\newcommand*{\kidchapicon}{\faStar}
+\newcommand*{\chaptericon}[1]{\renewcommand*{\kidchapicon}{#1}}
+
+\newcommand*{\kidbadge}[1]{%
+  \begin{tikzpicture}[baseline=0pt]
+    \node[fill=kidaccent,rounded corners=9pt,minimum size=3.1em,
+          text=white,font=\LARGE,inner sep=0pt] {#1};
+  \end{tikzpicture}%
+}
+
+% The contents page uses a compact one-line head; chapter openers stack, which
+% is too tall to leave room for the whole list.
+\newif\ifkidcompacthead
+
+% #1 = level name, #2 = formatted number (empty for starred), #3 = title
+\renewcommand*{\chapterformat}{\thechapter}
+\renewcommand*{\chapterlinesformat}[3]{%
+  \kidnextcolor
+  \ifkidcompacthead
+    \noindent\kidbadge{\kidchapicon}\hspace{0.7em}%
+    \begin{minipage}[c]{\dimexpr\textwidth-4.1em\relax}
+      \RaggedRight\usekomafont{chapter}\color{kidink}#3
+    \end{minipage}\par
+    \vspace{0.45em}%
+  \else
+    \noindent\kidbadge{\kidchapicon}\par
+    \vspace{0.7em}%
+    \Ifstr{#2}{}{}{{\normalfont\bfseries\footnotesize
+      \color{kidaccent}\MakeUppercase{Chapter #2}\par\vspace{0.15em}}}%
+    {\usekomafont{chapter}\color{kidink}#3\par}%
+    \vspace{0.55em}%
+  \fi
+  \textcolor{kidaccent!30}{\rule{\textwidth}{2.5pt}}%
+  \chaptericon{\faStar}% reset for the next chapter
+}
+
+% Keep a section head with the start of what it introduces. A bare "6.4
+% Bouncing Word" at the foot of a page sends the reader hunting for the
+% listing on the other side of the fold.
+\let\kidoldsection\section
+\renewcommand{\section}{\Needspace{13\baselineskip}\kidoldsection}
+
+% Opening line of a chapter, set a size up. Gives every chapter a way in.
+\newcommand*{\lede}[1]{{\large\color{kidink}#1\par}}
+
+% ---------------------------------------------------------------------------
+% Page furniture
+% ---------------------------------------------------------------------------
+
+\clearpairofpagestyles
+\cfoot*{%
+  \begin{tikzpicture}[baseline=0pt]
+    \node[circle,fill=kidink!8,text=kidink,font=\normalfont\bfseries\small,
+          inner sep=0pt,minimum size=1.9em] {\thepage};
+  \end{tikzpicture}%
+}
+
+% ---------------------------------------------------------------------------
+% Inline bits: keycaps and command chips
+% ---------------------------------------------------------------------------
+
+\newcommand*{\key}[1]{%
+  \tikz[baseline=(K.base)]{%
+    \node[draw=kidink!45,fill=kidink!6,rounded corners=3pt,line width=0.7pt,
+          inner xsep=4.5pt,inner ysep=2pt,font=\bfseries\small](K){\strut#1};}%
+}
+
+\newcommand*{\chip}[1]{%
+  \tikz[baseline=(C.base)]{%
+    \node[fill=kidaccent!12,rounded corners=3pt,text=kidaccent!85!black,
+          inner xsep=4.5pt,inner ysep=2pt,
+          font=\ttfamily\bfseries](C){\strut#1};}%
+}
+
+% ---------------------------------------------------------------------------
+% Code you are meant to type
+% ---------------------------------------------------------------------------
+
+% Deliberately unbreakable: a program split across a page turn is the one
+% thing guaranteed to lose a kid who is copying it line by line.
+\newtcolorbox{kidcodebox}[1][]{%
+  enhanced,
+  colback=kidaccent!6, colframe=kidaccent!55,
+  boxrule=0pt, leftrule=3pt, arc=5pt,
+  left=10pt, right=10pt, top=7pt, bottom=7pt,
+  before skip=0.9em, after skip=0.9em,
+  #1%
+}
+
+\newenvironment{code}%
+  {\VerbatimEnvironment
+   \begin{kidcodebox}%
+   \begin{Verbatim}[fontsize=\normalsize]}%
+  {\end{Verbatim}%
+   \end{kidcodebox}}
+
+% ---------------------------------------------------------------------------
+% Callouts
+% ---------------------------------------------------------------------------
+
+\newtcolorbox{trythis}[1][Try changing]{%
+  enhanced,
+  halign=flush left,
+  colback=white, colframe=white,
+  boxrule=0pt, arc=7pt,
+  borderline={1.2pt}{0pt}{kidaccent!65,dash pattern=on 4pt off 3pt,
+                          rounded corners=7pt},
+  left=10pt, right=10pt, top=8pt, bottom=8pt,
+  before skip=1em, after skip=1em,
+  title={\faLightbulb[regular]\ \ #1},
+  fonttitle=\bfseries,
+  coltitle=kidaccent!85!black,
+  attach boxed title to top left={xshift=12pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=white,colframe=white,boxrule=0pt,
+                     left=4pt,right=4pt,top=0pt,bottom=0pt},
+}
+
+\newtcolorbox{heads}[1][If something goes wrong]{%
+  enhanced,
+  halign=flush left,
+  colback=kidorange!8, colframe=kidorange!70,
+  boxrule=0pt, leftrule=3pt, arc=5pt,
+  left=10pt, right=10pt, top=8pt, bottom=8pt,
+  before skip=1em, after skip=1em,
+  title={\faHandPaper[regular]\ \ #1},
+  fonttitle=\bfseries, coltitle=kidorange!80!black,
+  attach boxed title to top left={xshift=10pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=kidorange!8,colframe=kidorange!8,boxrule=0pt,
+                     left=4pt,right=4pt,top=0pt,bottom=0pt},
+}
+
+% ---------------------------------------------------------------------------
+% Command reference lists
+% ---------------------------------------------------------------------------
+
+% Wrapped in a minipage so a four-line command table never leaves one lonely
+% row on the next page.
+\newenvironment{commandlist}[1][]%
+  {\par\noindent\begin{minipage}{\linewidth}%
+   \begin{description}[leftmargin=0.24\linewidth,labelwidth=0.21\linewidth,
+     labelsep=0.03\linewidth,align=left,font=\normalfont,
+     itemsep=0.4em,topsep=0.5em,parsep=0pt,#1]}%
+  {\end{description}\end{minipage}\par}
+
+\newcommand*{\cmd}[2]{\item[\chip{#1}] #2}
+
+% ---------------------------------------------------------------------------
+% Turtle, drawn rather than photographed. \kidturtlebody is picture content so
+% it can be dropped into a larger scene (the cover); the two wrappers make a
+% standalone picture for inline use.
+% ---------------------------------------------------------------------------
+
+\definecolor{kidgreendark}{HTML}{215F31}
+
+% #1 shell, #2 head and feet, #3 markings, #4 eyes
+% The shell is a touch smaller than the limb circle centres so head and feet
+% stay legible when this is shrunk to chapter-badge size.
+\newcommand*{\kidturtlebody}[4]{%
+  \foreach \x/\y in {-0.60/-0.36, 0.60/-0.36, -0.56/0.36, 0.56/0.36}{%
+    \fill[#2] (\x,\y) circle (0.20);
+    \draw[#3,line width=0.9pt] (\x,\y) circle (0.20);}
+  \fill[#2] (0,0.68) circle (0.26);
+  \draw[#3,line width=0.9pt] (0,0.68) circle (0.26);
+  \fill[#1] (0,0) circle (0.60);
+  \draw[#3,line width=1.6pt] (0,0) circle (0.60);
+  \fill[#3] (0,0) circle (0.22);
+  \foreach \a in {0,72,...,288}
+    \draw[#3,line width=1.6pt,line cap=round] (\a:0.30) -- (\a:0.52);
+  \fill[#4] (-0.10,0.74) circle (0.06);
+  \fill[#4] (0.10,0.74) circle (0.06);
+}
+
+\newcommand*{\kidturtle}[1][1]{%
+  \begin{tikzpicture}[scale=#1,line join=round]
+    \kidturtlebody{kidgreen}{kidgreendark}{kidgreendark}{white}
+  \end{tikzpicture}%
+}
+
+% White on the accent colour, for the chapter badge.
+\newcommand*{\kidturtlew}[1][1]{%
+  \begin{tikzpicture}[scale=#1,line join=round]
+    \kidturtlebody{white}{white}{kidaccent}{kidaccent}
+  \end{tikzpicture}%
+}
+
+% Dot grid for the write-in pages at the back. Sized to the text block, at a
+% pitch a six-year-old can actually write between.
+\newcommand*{\dotgridpage}[1]{%
+  \clearpage
+  \thispagestyle{empty}%
+  \noindent{\usekomafont{chapter}\color{kidink}#1}\par
+  \vspace{0.35em}%
+  \noindent\textcolor{kidblue!35}{\rule{\textwidth}{2.5pt}}\par
+  \vspace{0.9em}%
+  \noindent\begin{tikzpicture}
+    \clip (0,0) rectangle (\textwidth,-12.8);
+    \foreach \x in {0,0.55,...,16}
+      \foreach \y in {0,-0.55,...,-14}
+        \fill[kidink!35] (\x,\y) circle (0.042);
+  \end{tikzpicture}%
+  \clearpage
+}
+
+\endinput
