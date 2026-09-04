@@ -61,7 +61,8 @@ HEADER = """\
 # Rebuild from source with tools/build-dictionary.py
 #
 # Definitions come from Simple English Wiktionary
-# (https://simple.wiktionary.org), used under CC BY-SA 4.0. Text has been
+# (https://simple.wiktionary.org), used under CC BY-SA 4.0
+# (https://creativecommons.org/licenses/by-sa/4.0/). Text has been
 # filtered and truncated; see tools/build-dictionary.py for exactly how.
 # Derived text remains under CC BY-SA 4.0.
 """
