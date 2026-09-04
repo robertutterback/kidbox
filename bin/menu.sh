@@ -8,7 +8,7 @@ set -euo pipefail
 #
 # Use --dev flag for local testing (adds Exit option, allows Ctrl+C)
 
-VERSION="1.4"
+VERSION="1.5"
 DEV_MODE=false
 if [[ "${1:-}" == "--dev" ]]; then
   DEV_MODE=true
@@ -72,6 +72,7 @@ MENU_ITEMS=(
   7 "Timer"
   8 "Stopwatch"
   9 "Read the Book"
+  10 "Look Up a Word"
 )
 
 # Website items come from $SITES_CONF, read fresh every time the menu is drawn
@@ -158,6 +159,7 @@ while true; do
     7) run_x "$TIMER_SCRIPT" ;;
     8) run_x "$STOPWATCH_SCRIPT" ;;
     9) run_x chromium-browser --kiosk --app="file://$BOOK_PDF" ;;
+    10) run_x "$DICTIONARY_SCRIPT" ;;
     20) sudo shutdown -h now ;;
     0) exit 0 ;;
     *)

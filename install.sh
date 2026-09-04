@@ -62,9 +62,6 @@ APT_PACKAGES=(
   console-setup
   kbd
   python3-evdev
-  dictd
-  dict
-  dict-wn
   xdotool
 )
 
@@ -90,6 +87,9 @@ for script in "$REPO_ROOT/bin/"*.sh; do
     install -m 0755 "$script" "$KID_BIN_DIR/$(basename "$script")"
   fi
 done
+
+echo "[kidbox] Installing dictionary suggester..."
+install -m 0755 "$REPO_ROOT/bin/dictionary-suggest.py" "$KID_BIN_DIR/dictionary-suggest.py"
 
 # -------------------------------
 # Install .xinitrc
@@ -141,6 +141,12 @@ install -m 0644 "$REPO_ROOT/content/logo/welcome.lg" "$KIDBOX_DIR/logo/welcome.l
 # Book PDF: copy if exists
 if [[ -f "$REPO_ROOT/doc/kidbook.pdf" ]]; then
   install -m 0644 "$REPO_ROOT/doc/kidbook.pdf" "$KIDBOX_DIR/kidbook.pdf"
+fi
+
+# Dictionary: built by tools/build-dictionary.py and committed, so the Pi
+# never needs the source data or a build step.
+if [[ -f "$REPO_ROOT/content/dictionary.txt" ]]; then
+  install -m 0644 "$REPO_ROOT/content/dictionary.txt" "$KIDBOX_DIR/dictionary.txt"
 fi
 
 # Clock HTML: copy if exists
