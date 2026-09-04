@@ -8,7 +8,7 @@ set -euo pipefail
 #
 # Use --dev flag for local testing (adds Exit option, allows Ctrl+C)
 
-VERSION="1.3"
+VERSION="1.4"
 DEV_MODE=false
 if [[ "${1:-}" == "--dev" ]]; then
   DEV_MODE=true
@@ -29,6 +29,7 @@ LOGO_WELCOME="$KIDBOX_DIR/logo/welcome.lg"
 CLOCK_SCRIPT="$HOME/bin/clock.sh"
 TIMER_SCRIPT="$HOME/bin/timer.sh"
 STOPWATCH_SCRIPT="$HOME/bin/stopwatch.sh"
+DICTIONARY_SCRIPT="$HOME/bin/dictionary.sh"
 BOOK_PDF="$KIDBOX_DIR/kidbook.pdf"
 SITE_SCRIPT="$HOME/bin/site.sh"
 SITES_CONF="${KIDBOX_SITES_CONF:-/etc/kidbox/sites.conf}"

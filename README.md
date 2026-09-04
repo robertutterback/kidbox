@@ -14,6 +14,7 @@ MVP Activities:
 - Clock: Custom HTML/CSS/JS analog + digital (Chromium kiosk mode)
 - Timer: Visual countdown with looping background music and alarm
 - Stopwatch: Count-up timer
+- Dictionary: Offline word lookup using `dictd` + WordNet; suggests nearby words on a typo
 - Book: View the instruction book (Chromium kiosk mode - evince was tried but took ~60s to load, xpdf is too hard for kids)
 - Websites: A configurable list of approved sites (Chromium kiosk mode, no address bar, machine-wide allowlist)
 

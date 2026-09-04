@@ -62,6 +62,9 @@ APT_PACKAGES=(
   console-setup
   kbd
   python3-evdev
+  dictd
+  dict
+  dict-wn
   xdotool
 )
 
