@@ -1,0 +1,740 @@
+% The Turtle Book: a longer, guided introduction to Logo (with a little
+% BASIC at the end) for a strong young reader. Companion to kidbook.tex and
+% set with the same kidstyle.sty.
+%
+% Every program listed here is a file under programs/, and every picture
+% under figures/ was drawn by running that file. To re-test the programs
+% and regenerate the figures:  ../tools/check-programs.sh  (or make check).
+%
+% The grey "To write" boxes are the outline for the prose. Set
+% \draftnotesfalse below to print the book without them. kidbook opens each
+% chapter with \lede{...} for its first line; do the same here once written.
+
+\documentclass[12pt,oneside,paper=5.5in:8.5in,DIV=11,chapterprefix=false,headings=big]{scrbook}
+
+\usepackage{kidstyle}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\hypersetup{pdftitle={The Turtle Book}}
+% Twenty chapters: two-digit numbers need more room in the contents than
+% kidstyle allows for.
+\DeclareTOCStyleEntry[numwidth=2.3em]{chapter}{chapter}
+
+% ---- Draft notes ----------------------------------------------------------
+\newif\ifdraftnotes
+\draftnotestrue
+\newtcolorbox{draftbox}{%
+  enhanced, breakable,
+  colback=kidink!5, colframe=kidink!35, boxrule=0.6pt, arc=3pt,
+  left=6pt, right=6pt, top=4pt, bottom=4pt,
+  before skip=0.6em, after skip=0.6em,
+  fontupper=\small, before upper=\RaggedRight}
+\newcommand{\draftnote}[1]{\ifdraftnotes\begin{draftbox}\textbf{\color{kidink!70}To write:} #1\end{draftbox}\fi}
+
+% ---- Programs and pictures ------------------------------------------------
+% A listing is read straight from programs/, so the book shows exactly what
+% tools/check-programs.sh ran. \small rather than kidbook's \normalsize: some
+% BASIC lines here run to 52 characters.
+\newcommand{\logoprogram}[1]{%
+  \begin{kidcodebox}\VerbatimInput[fontsize=\small]{programs/logo/#1.lg}\end{kidcodebox}}
+\newcommand{\basicprogram}[1]{%
+  \begin{kidcodebox}\VerbatimInput[fontsize=\small]{programs/basic/#1.BAS}\end{kidcodebox}}
+% What a Logo program drew. Optional argument caps the height. No extension:
+% most figures are vector PDFs from the EPS export, but the few that need a
+% real screenshot (fill, label) are PNGs, and graphicx finds either.
+\newcommand{\drawing}[2][1.5in]{%
+  \begin{center}
+    \includegraphics[height=#1,width=0.8\linewidth,keepaspectratio]{figures/#2}
+  \end{center}}
+% What a program printed: a dark box, like the screen.
+\newtcolorbox{screenbox}{%
+  enhanced, colback=kidink!92, colframe=kidink!92, arc=5pt,
+  left=10pt, right=10pt, top=6pt, bottom=6pt,
+  before skip=0.9em, after skip=0.9em}
+\newcommand{\screen}[1]{%
+  \begin{screenbox}\VerbatimInput[fontsize=\small,formatcom=\color{white}]{figures/#1.txt}\end{screenbox}}
+
+\begin{document}
+
+\frontmatter
+
+% ---------------------------------------------------------------------------
+% Cover
+% ---------------------------------------------------------------------------
+\begin{titlepage}
+\centering
+
+\vspace*{\stretch{1}}
+
+\begin{tikzpicture}
+  \foreach \i/\c in {0/kidred, 1/kidorange, 2/kidgreen, 3/kidblue, 4/kidpurple, 5/kidteal}
+    \fill[\c] (\i*0.62,0) circle (0.17);
+\end{tikzpicture}
+
+\vspace{1.2em}
+
+{\fontsize{34}{38}\selectfont\bfseries\color{kidink} The Turtle\\[0.1em]
+ \color{kidgreen} Book\par}
+
+\vspace{0.8em}
+
+{\large\bfseries\color{kidink!70} A longer book about Logo,\\
+ with a little BASIC at the end\par}
+
+\vspace{1.6em}
+
+% The turtle part way round a square, the first shape in the book.
+\begin{tikzpicture}[scale=1.0,line join=round]
+  \draw[kidblue,line width=2.2pt,line cap=round]
+    (-1.5,-1.5) -- (-1.5,1.5) -- (1.5,1.5) -- (1.5,-0.2);
+  \begin{scope}[shift={(1.5,-0.55)},rotate=180,scale=0.8]
+    \kidturtlebody{kidgreen}{kidgreendark}{kidgreendark}{white}
+  \end{scope}
+\end{tikzpicture}
+
+\vspace{1.6em}
+
+{\Large\bfseries\color{kidink} For \rule{5em}{0.5pt}\par}
+
+\vspace*{\stretch{1.15}}
+\end{titlepage}
+
+\draftnote{Her name goes on the line on the cover. Decide whether this
+  book is hers alone or shared; the kidbook names both girls.}
+
+% ---------------------------------------------------------------------------
+
+\renewcommand*{\contentsname}{What Is Inside}
+\chaptericon{\faListUl}
+\tableofcontents
+
+\mainmatter
+
+\part{The Turtle}
+
+% ---------------------------------------------------------------------------
+\chaptericon{\faPowerOff}
+\chapter{Before You Start}
+
+\draftnote{How to open Logo from the menu (``Draw Pictures with Logo
+  Turtle''). What appears: a grey screen, a small triangle in the middle
+  (that is the turtle, seen from above), a house it has already drawn,
+  and a question mark where you type. You type a line, press
+  \key{Enter}, the turtle does it. Mistakes are fine and expected; the
+  worst that happens is a message (Chapter~\ref{ch:wrong}). How to
+  leave: type \texttt{bye}, or hold \key{Ctrl} and \key{Alt} and press
+  \key{Backspace}. \par
+  Decide about case: this book prints commands in lowercase because it is
+  easier to type, but the kidbook uses \texttt{FD 50}. Logo accepts both.
+  Say so once.}
+
+% ---------------------------------------------------------------------------
+\chaptericon{\kidturtlew[0.72]}
+\chapter{Meet the Turtle}
+
+\draftnote{The turtle knows four moving words: \texttt{fd} (forward),
+  \texttt{bk} (back), \texttt{rt} (right), \texttt{lt} (left). Each one
+  wants a number after it: how far, or how much to turn. The turtle always
+  has a place and a direction it is facing; \texttt{fd} changes the place,
+  \texttt{rt} and \texttt{lt} change the direction. A good first activity
+  away from the computer: one person is the turtle, the other gives
+  commands, and the turtle may only do exactly what was said.}
+
+Type these three lines, one at a time, pressing \key{Enter} after each:
+
+\logoprogram{first-steps}
+\drawing{first-steps}
+
+\draftnote{Two more words: \texttt{cs} wipes the screen and puts the turtle
+  back in the middle facing up; \texttt{home} sends it back without
+  wiping.}
+
+\begin{trythis}[Try]
+\begin{itemize}
+\item \chip{bk 100} --- does the turtle draw when it walks backwards?
+\item \chip{rt 90} four times in a row. Where is it facing now?
+\item Draw the letter L. Then the letter T (you will need \chip{bk}).
+\end{itemize}
+\end{trythis}
+
+% ---------------------------------------------------------------------------
+\chaptericon{\faRedo}
+\chapter{Turning}
+
+\draftnote{What the number after \texttt{rt} means. \texttt{rt 90} is a
+  quarter turn, the corner of a square; \texttt{rt 180} is turning to face
+  the opposite way; \texttt{rt 360} is all the way around, so the turtle
+  ends up facing where it started. Smaller numbers are smaller turns.
+  \texttt{rt 45} is half of a corner. Do it with your body: face the
+  window, \texttt{rt 90}, now you face the door.}
+
+\logoprogram{zigzag}
+\drawing{zigzag}
+
+\begin{trythis}[Try]
+\begin{itemize}
+\item Change every \chip{50} to \chip{30}. Then to \chip{80}.
+\item Change \chip{45} to \chip{20}. What changed?
+\item Make the zigzag longer by typing more lines.
+\end{itemize}
+\end{trythis}
+
+% ---------------------------------------------------------------------------
+\chaptericon{\faIcon{sync-alt}}
+\chapter{Saying It Again}
+
+Here is a square, the long way:
+
+\logoprogram{square-long}
+
+\draftnote{Notice the same two lines typed four times. Logo has a word for
+  ``do this again'': \texttt{repeat}, then how many times, then the
+  commands inside square brackets. The brackets say where the repeated
+  part starts and ends.}
+
+\logoprogram{square-repeat}
+\drawing{square-repeat}
+
+\draftnote{The big idea in this chapter: to draw a closed shape and end up
+  facing the way it started, the turtle turns all the way around once,
+  which is 360. Four corners share 360, so each is 90. Three corners share
+  360, so each is 120. Let her check the table with a calculator or by
+  counting up.}
+
+\logoprogram{triangle}
+\drawing[1.2in]{triangle}
+
+\logoprogram{hexagon}
+\drawing[1.2in]{hexagon}
+
+\begin{center}
+\begin{tabular}{rrl}
+\toprule
+sides & turn & \\
+\midrule
+3 & 120 & triangle \\
+4 & 90 & square \\
+5 & 72 & pentagon \\
+6 & 60 & hexagon \\
+8 & 45 & octagon \\
+12 & 30 & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\draftnote{Sides times turn is always 360. Invite her to guess what
+  twelve sides will look like before running it.}
+
+\logoprogram{twelve-sides}
+\drawing[1.2in]{twelve-sides}
+
+\draftnote{And if the turtle takes 360 tiny steps with 360 tiny turns, the
+  corners disappear.}
+
+\logoprogram{circle}
+\drawing[1.2in]{circle}
+
+\begin{trythis}[Try]
+\begin{itemize}
+\item \chip{repeat 4 [fd 100 rt 90]} but change \chip{90} to
+  \chip{91}. Then \chip{repeat 40} of that.
+\item \chip{repeat 5 [fd 100 rt 144]} --- a star. Why 144 and not 72?
+\item \chip{repeat 360 [fd 2 rt 1]} --- a bigger circle.
+\end{itemize}
+\end{trythis}
+
+% ---------------------------------------------------------------------------
+\chaptericon{\faPaintBrush}
+\chapter{The Pen}
+
+\draftnote{The turtle carries a pen. \texttt{pu} lifts it so the turtle
+  moves without drawing; \texttt{pd} puts it back down. This is how you
+  draw two things that do not touch.}
+
+\logoprogram{dashes}
+\drawing[1.2in]{dashes}
+
+\draftnote{\texttt{setpc} sets the pen colour by number and
+  \texttt{setpensize} makes the line thicker. The two numbers in
+  \texttt{setpensize [5 5]} are width and height; just keep them the
+  same.}
+
+\logoprogram{colors}
+\drawing[1.3in]{colors}
+
+\begin{center}
+\begin{tabular}{rlrl}
+\toprule
+0 & black   & 8  & brown \\
+1 & blue    & 9  & tan \\
+2 & green   & 10 & forest green \\
+3 & light blue & 11 & aqua \\
+4 & red     & 12 & salmon \\
+5 & magenta & 13 & purple \\
+6 & yellow  & 14 & orange \\
+7 & white   & 15 & grey \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\draftnote{\texttt{setbg} changes the background with the same numbers.
+  The screen starts grey (15) with a black pen because the welcome file
+  sets it that way.}
+
+\draftnote{Inside a \texttt{repeat}, the word \texttt{repcount} is the
+  number of the turn Logo is on: 1 the first time, 2 the second, and so
+  on. Using it as the pen colour gives a different colour each spoke.}
+
+\logoprogram{color-wheel}
+\drawing[1.3in]{color-wheel}
+
+\draftnote{\texttt{fill} pours colour into the closed shape the turtle is
+  standing inside, so first draw the shape, then lift the pen and step
+  inside. If the turtle is outside the shape, the colour goes outside.}
+
+\logoprogram{fill}
+\drawing[1.2in]{fill}
+
+\begin{trythis}[Try]
+\begin{itemize}
+\item A dotted circle: \chip{repeat 36 [fd 5 pu fd 5 pd rt 10]}
+\item Every colour: \chip{repeat 16 [setpc repcount fd 20 rt 90 fd 5 lt 90]}
+\item Fill the house that was on the screen when Logo opened.
+\end{itemize}
+\end{trythis}
+
+% ---------------------------------------------------------------------------
+\chaptericon{\faGraduationCap}
+\chapter{Teaching the Turtle a New Word}
+\label{ch:to}
+
+\draftnote{The turtle only knows the words it was born with, but you can
+  teach it more. \texttt{to square} starts a lesson; the lines after it
+  are what \texttt{square} means; \texttt{end} finishes the lesson. While
+  you are teaching, the prompt changes from \texttt{?} to \texttt{>} so
+  you know Logo is listening to the lesson rather than doing things. After
+  \texttt{end}, \texttt{square} is a word like any other.}
+
+\logoprogram{square-word}
+\drawing[1.3in]{square-word}
+
+\draftnote{Useful words about words: \texttt{po "square} shows the lesson
+  back to you (the quote mark is part of it); \texttt{pots} lists every
+  word you have taught; \texttt{erase "square} forgets one. \par
+  Words are forgotten when Logo closes. \texttt{save "mine.lg} writes them
+  all to a file and \texttt{load "mine.lg} brings them back next time.
+  The file lands wherever Logo was started from, which the menu keeps
+  the same every time, so \texttt{load} finds it again.}
+
+\begin{trythis}[Try]
+\begin{itemize}
+\item Teach the turtle \chip{triangle}. Then \chip{hexagon}.
+\item \chip{repeat 8 [square rt 45]}
+\item Teach it \chip{box}: a square, then back to where it started,
+  facing the same way. Check with \chip{repeat 3 [box fd 120]}.
+\end{itemize}
+\end{trythis}
+
+% ---------------------------------------------------------------------------
+\chaptericon{\faHashtag}
+\chapter{Words That Take a Number}
+
+\draftnote{\texttt{fd} takes a number; why can't \texttt{square}? It can.
+  \texttt{to square :size} means ``square wants one number, and inside
+  the lesson we will call it \texttt{size}.'' The colon (dots) means ``the
+  number that was handed to me,'' not the word itself. Then
+  \texttt{square 30} and \texttt{square 120} are the same lesson with
+  different numbers.}
+
+\logoprogram{square-size}
+\drawing[1.4in]{square-size}
+
+\draftnote{A word you taught can be used inside another lesson, exactly
+  like a built-in word. \texttt{flower} hands its own number on to
+  \texttt{square}.}
+
+\logoprogram{flower}
+\drawing[1.5in]{flower}
+
+\begin{trythis}[Try]
+\begin{itemize}
+\item \chip{flower 30}, \chip{flower 120}
+\item Change \chip{12} and \chip{30} in \chip{flower} (keep them
+  multiplying to 360, or don't, and see).
+\item Teach \chip{triangle :size} and make a triangle flower.
+\end{itemize}
+\end{trythis}
+
+% ---------------------------------------------------------------------------
+\chaptericon{\faHome}
+\chapter{Building Big Things}
+
+\draftnote{Big pictures are made from small words. A house is a square with
+  a triangle on top; the tricky part is walking the turtle to the top-left
+  corner and tilting it 30 degrees so the roof sits flat. Trace it with a
+  finger, line by line, saying where the turtle is. This is the house that
+  is already on the screen when Logo opens.}
+
+\logoprogram{house}
+\drawing[1.5in]{house}
+
+\draftnote{\texttt{house} leaves the turtle exactly where it started,
+  facing the same way. That is on purpose: it makes \texttt{house} safe to
+  use inside a \texttt{repeat}. Walk right with the pen up, draw another.}
+
+\logoprogram{street}
+\drawing[1.2in]{street}
+
+\begin{trythis}[Try]
+\begin{itemize}
+\item A street of five houses. (Do they fit? Make them smaller.)
+\item A door: a small tall rectangle. Where does the turtle have to walk first?
+\item A window, a chimney, a sun (\chip{circle}) in the sky.
+\end{itemize}
+\end{trythis}
+
+% ---------------------------------------------------------------------------
+\chaptericon{\faInfinity}
+\chapter{A Word That Uses Itself}
+
+\draftnote{The strangest and best trick. \texttt{spiral} draws one side,
+  turns, and then calls \texttt{spiral} again with a slightly bigger
+  number. Each square is a little bigger than the last, so the line
+  spirals out. \par
+  The \texttt{if} line is the stop rule: once the number gets past 150,
+  \texttt{stop} ends the lesson and the turtle rests. Ask what would
+  happen without it: it would never stop. The way out is the
+  \textbf{Logo} menu at the top of the window, then \textbf{Stop}
+  (verified on this version of UCBLogo; Ctrl+C does nothing while a
+  program runs). The menu shows Alt+S as a shortcut, still to be tried
+  on the Pi. If all else fails, \key{Ctrl}+\key{Alt}+\key{Backspace}
+  leaves Logo for the menu, as the kidbook says.}
+
+\logoprogram{spiral}
+\drawing[1.5in]{spiral}
+
+\logoprogram{triangle-spiral}
+\drawing[1.5in]{triangle-spiral}
+
+\begin{trythis}[Try]
+\begin{itemize}
+\item In \chip{spiral}, change \chip{rt 90} to \chip{rt 91}. Then \chip{rt 89}.
+\item Change \chip{+ 10} to \chip{+ 3}.
+\item Change \chip{150} to \chip{300}.
+\item Make a \chip{hexspiral} with \chip{rt 60}.
+\end{itemize}
+\end{trythis}
+
+% ---------------------------------------------------------------------------
+\chaptericon{\faCommentDots}
+\chapter{The Turtle Can Talk}
+
+\draftnote{\texttt{print} writes in the text part of the screen. Words go
+  in square brackets. Numbers can be added: \texttt{sum 2 3} or
+  \texttt{2 + 3}, times is \texttt{*}. So Logo is also a calculator.}
+
+\logoprogram{talking}
+\screen{talking}
+
+\draftnote{\texttt{label} writes words on the drawing, at the turtle,
+  facing the way the turtle faces. \texttt{setlabelheight} makes the
+  letters bigger. Put her name in it.}
+
+\logoprogram{name-sign}
+\drawing[1in]{name-sign}
+
+\begin{trythis}[Try]
+\begin{itemize}
+\item \chip{print 100 * 100}
+\item \chip{rt 90 label [sideways]}
+\item Write your name at the four corners of a square:
+  \chip{repeat 4 [label [ME] fd 100 rt 90]}
+\end{itemize}
+\end{trythis}
+
+% ---------------------------------------------------------------------------
+\chaptericon{\faDice}
+\chapter{Surprises}
+
+\draftnote{\texttt{random 30} gives a number the turtle picks by itself,
+  from 0 up to 29 (not 30; say so, she will ask). Run \texttt{print random
+  10} several times to see. A program with \texttt{random} in it draws a
+  different picture every time.}
+
+\logoprogram{wander}
+\drawing[1.4in]{wander}
+
+\logoprogram{random-colors}
+\drawing[1.4in]{random-colors}
+
+\begin{trythis}[Try]
+\begin{itemize}
+\item Run \chip{repeat 100 [wander]} three times. Same picture?
+\item \chip{repeat 20 [square random 100]}
+\item \chip{repeat 50 [setpc random 16 house random 80]}
+\end{itemize}
+\end{trythis}
+
+% ---------------------------------------------------------------------------
+\chaptericon{\faGamepad}
+\chapter{Driving the Turtle}
+
+\draftnote{A game. \texttt{readchar} waits for one key and hands it over;
+  \texttt{make "key} stores it under the name \texttt{key}, and
+  \texttt{:key} reads it back, the same colon as in \texttt{:size}. Each
+  \texttt{if} checks for one letter. The last line calls \texttt{drive}
+  again, so it keeps listening until you press \key{Q}. Keys: \key{W}
+  forward, \key{S} back, \key{A} left, \key{D} right, \key{Q} quit.
+  The picture is what the check script drove; hers will differ.}
+
+\logoprogram{drive-interactive}
+\drawing[1.3in]{drive-interactive}
+
+\begin{trythis}[Try]
+\begin{itemize}
+\item Make \key{W} go further. Make \key{A} and \key{D} turn less.
+\item Add a key that lifts the pen and one that puts it down.
+\item Add a key that changes colour.
+\item Add \key{C} for \chip{cs}.
+\end{itemize}
+\end{trythis}
+
+% ---------------------------------------------------------------------------
+\chaptericon{\faExclamationTriangle}
+\chapter{When Things Go Wrong}
+\label{ch:wrong}
+
+\draftnote{The turtle never breaks; it just says it does not understand.
+  These are the four messages she will see most. Each one is the turtle
+  being honest about exactly what confused it.}
+
+\begin{center}
+\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{1.55in}>{\raggedright\arraybackslash}p{2.35in}}
+\toprule
+The turtle says & What it means \\
+\midrule
+\texttt{I don't know how to squar}
+  & A word it has not learned. Usually a spelling slip, or a lesson you
+    have not taught yet in this session. \\[0.5em]
+\texttt{not enough inputs to fd}
+  & \texttt{fd} wanted a number and did not get one. \\[0.5em]
+\texttt{You don't say what to do with 50}
+  & A number with no word in front of it. The turtle has 50 and no
+    idea what for. \\[0.5em]
+\texttt{size has no value}
+  & \texttt{:size} used outside a lesson that was handed a size. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\draftnote{Also: if the turtle will not stop, use the Logo menu at the
+  top, then Stop. A missing \texttt{]} makes Logo wait silently for more
+  (the prompt changes); type \texttt{]} and Enter. And the difference
+  between \texttt{square} and \texttt{"square}: without the quote, Logo
+  runs the word; with it, Logo means the name.}
+
+% ---------------------------------------------------------------------------
+\chaptericon{\faBook}
+\chapter{Words the Turtle Knows}
+
+\section*{Moving}
+\begin{commandlist}
+\cmd{fd 50}{forward}
+\cmd{bk 50}{back}
+\cmd{rt 90}{turn right}
+\cmd{lt 90}{turn left}
+\cmd{cs}{clear the screen, turtle to the middle}
+\cmd{home}{turtle to the middle, keep the drawing}
+\cmd{ht}{hide the turtle}
+\cmd{st}{show the turtle}
+\end{commandlist}
+
+\section*{The pen}
+\begin{commandlist}
+\cmd{pu}{pen up}
+\cmd{pd}{pen down}
+\cmd{setpc 4}{pen colour}
+\cmd{setbg 7}{background colour}
+\cmd{setpensize [5 5]}{thicker pen}
+\cmd{fill}{pour colour into the shape you are inside}
+\end{commandlist}
+
+\section*{Again and again}
+\begin{commandlist}
+\cmd{repeat 4 [ ... ]}{do it again}
+\cmd{repcount}{which time this is, inside a repeat}
+\cmd{to name :size}{start teaching a word}
+\cmd{end}{finish teaching}
+\cmd{po "name}{show a lesson}
+\cmd{pots}{list all lessons}
+\cmd{erase "name}{forget a lesson}
+\cmd{save "f.lg}{keep lessons in a file}
+\cmd{load "f.lg}{get them back}
+\cmd{if :size > 150 [stop]}{stop rule}
+\end{commandlist}
+
+\section*{Talking}
+\begin{commandlist}
+\cmd{print [hi]}{write words}
+\cmd{label [hi]}{write words on the drawing}
+\cmd{random 30}{a number from 0 to 29}
+\cmd{make "key readchar}{wait for a key and remember it}
+\cmd{wait 60}{pause one second}
+\cmd{bye}{leave Logo}
+\end{commandlist}
+
+\part{A Little BASIC}
+
+% ---------------------------------------------------------------------------
+\chaptericon{\faTerminal}
+\chapter{A Different Language}
+
+\draftnote{BASIC is another computer language on the same computer (``Write
+  BASIC Programs'' on the menu). It is better at words and questions than
+  at drawing. Two differences from Logo up front: every line of a program
+  starts with a number, and the computer does nothing until you type
+  \texttt{RUN}. The numbers say what order to go in; counting by tens
+  leaves room to squeeze a line in between later. \texttt{LIST} shows the
+  program, \texttt{NEW} throws it away. \par
+  Stopping a runaway program: \key{Ctrl}+\key{C}, as the kidbook says
+  (PC-BASIC treats it like Ctrl+Break by default, so the welcome
+  screen's Ctrl+Break works too).}
+
+\basicprogram{HELLO}
+\screen{basic-HELLO}
+
+\draftnote{Line 40: with quotes, \texttt{PRINT} shows the letters; without
+  quotes, it works out the sum first. Same trick as Logo's
+  \texttt{print 2 + 3}.}
+
+\begin{trythis}[Try]
+\begin{itemize}
+\item Add a line 45 that prints your age. Type \chip{LIST}. Where did it go?
+\item \chip{PRINT 100 * 100} with no line number. It runs right away.
+\item Type line 20 again with different words. Which one wins?
+\end{itemize}
+\end{trythis}
+
+% ---------------------------------------------------------------------------
+\chaptericon{\faQuestionCircle}
+\chapter{The Computer Asks}
+
+\draftnote{\texttt{INPUT} prints the question, waits for an answer, and
+  stores it in \texttt{N\$}. The dollar sign means ``this box holds
+  words''; a box for numbers has no dollar sign. Semicolons in
+  \texttt{PRINT} glue pieces together on one line.}
+
+\basicprogram{NAME}
+\screen{basic-NAME}
+
+\begin{trythis}[Try]
+\begin{itemize}
+\item Ask for a favourite animal too, and print both.
+\item Print the name ten times (the kidbook's \chip{FOR} loop).
+\end{itemize}
+\end{trythis}
+
+% ---------------------------------------------------------------------------
+\chaptericon{\faPenFancy}
+\chapter{Mad Libs}
+
+\draftnote{Four questions, then a story with the answers dropped in. This
+  is the program she will want to change most, so leave room. Note line
+  80: \texttt{N} is a number box, so no dollar sign, and BASIC puts a space
+  on each side of a printed number by itself.}
+
+\basicprogram{MADLIB}
+\screen{basic-MADLIB}
+
+\begin{trythis}[Try]
+\begin{itemize}
+\item Write your own story with five blanks.
+\item Ask for a name and make the story about that person.
+\end{itemize}
+\end{trythis}
+
+% ---------------------------------------------------------------------------
+\chaptericon{\faBullseye}
+\chapter{Guess My Number}
+
+\draftnote{Three new pieces: \texttt{RND} picks the secret number (line 30
+  turns a fraction into 1 to 10); \texttt{IF \ldots\ THEN} does the rest
+  of the line only when the test is true; \texttt{GOTO 50} jumps back to
+  the question. Ask why the program needs \texttt{GOTO} here (it must ask
+  again) and why line 80 does not (it is finished).}
+
+\basicprogram{GUESS}
+\screen{basic-GUESS}
+
+\begin{trythis}[Try]
+\begin{itemize}
+\item Make it 1 to 100. How many guesses do you need if you are clever?
+\item Count the guesses: add \chip{T = T + 1} and print \chip{T} at the end.
+\item Swap roles: you pick, the computer guesses (hard; do it together).
+\end{itemize}
+\end{trythis}
+
+% ---------------------------------------------------------------------------
+\chaptericon{\faMusic}
+\chapter{Counting Down, Colours, Music}
+
+\draftnote{\texttt{FOR I = 10 TO 1 STEP -1} counts backwards. Line 40
+  is a musical rest: \texttt{PLAY "P2"} plays silence for half a note,
+  which is one second, and that is how the countdown gets its beat
+  (a do-nothing loop is no good; this computer runs it in no time).
+  \texttt{BEEP} at the end is the speaker. Whether the beep is audible
+  depends on the Pi's sound, see doc/PI-CHECKLIST.txt.}
+
+\basicprogram{COUNTDOWN}
+
+\draftnote{\texttt{COLOR} changes the colour of the text that comes after
+  it, numbers 1 to 15 like Logo's pen. \texttt{COLOR 7} puts it back to
+  normal.}
+
+\basicprogram{COLORS}
+
+\draftnote{\texttt{PLAY} takes a string of note names. A number after a
+  note makes it longer (2 is a half note). This one is Twinkle Twinkle.
+  \textbf{The one thing left to check on the Pi}: that PC-BASIC actually
+  makes sound there (doc/PI-CHECKLIST.txt). If it does not, drop this
+  section and the \texttt{BEEP} in the countdown.}
+
+\basicprogram{MUSIC}
+
+\begin{trythis}[Try]
+\begin{itemize}
+\item Count down from 20. Count up.
+\item Print your name in every colour.
+\item \chip{PLAY "C D E F G A B > C"} --- a scale. What does \chip{>} do?
+\item Write the next line of Twinkle Twinkle.
+\end{itemize}
+\end{trythis}
+
+% ---------------------------------------------------------------------------
+\chaptericon{\faBalanceScale}
+\chapter{Two Languages, Same Ideas}
+
+\draftnote{A closing page. Both languages have a way to say ``again''
+  (\texttt{repeat} / \texttt{FOR}), a way to name a thing
+  (\texttt{make} / \texttt{N = }), a way to choose (\texttt{if} /
+  \texttt{IF THEN}), and a way to ask (\texttt{readchar} /
+  \texttt{INPUT}). The words differ; the ideas are the same, and they are
+  the same in the languages Daddy uses at work. What to do next: pick one
+  of the ``Try'' ideas and make it yours.}
+
+% ---------------------------------------------------------------------------
+% Write-in pages, as in kidbook. pdfjam pads the rest to a multiple of 4.
+
+\dotgridpage{My Turtle Words}
+\dotgridpage{My Programs}
+
+% Colophon
+\thispagestyle{empty}
+\null\vfill
+{\centering\footnotesize\color{kidink!55}
+ The Turtle Book\\
+ Updated \today\par}
+
+\end{document}

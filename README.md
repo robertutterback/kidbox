@@ -51,16 +51,36 @@ git pull
 sudo ./install.sh
 ```
 
-## Building the Book
+## Building the Books
 
-If you need to rebuild the instruction book (`doc/kidbook.tex`), I
-recommend doing it on a normal development machine, unless you really
-want to install texlive on your Pi.
+There are two books in `doc/`:
+
+- `kidbook.tex` — the short instruction book for the whole computer.
+- `turtlebook.tex` — a longer, guided Logo book (with a little BASIC at
+  the end) for a stronger reader.
+
+If you need to rebuild them, I recommend doing it on a normal development
+machine, unless you really want to install texlive on your Pi.
 
 ```bash
 cd doc
 make
 ```
+
+Every program printed in the turtle book lives in `doc/programs/`, and every
+picture in `doc/figures/` was drawn by running that program. After changing a
+program, re-run the check on a development machine (it needs `ucblogo`,
+`pcbasic`, Xvfb, `xdotool`, ImageMagick, ghostscript and `pdfcrop`):
+
+```bash
+./tools/check-programs.sh          # or: make -C doc check
+./tools/check-programs.sh fill     # just one program
+```
+
+It fails if any program errors or hangs, and rewrites the figures otherwise.
+A Logo program that reads the keyboard gets a `.keys` file beside it with
+the keys to press. Most figures are vector exports; the ones that need a
+real screenshot (fills, labels) are listed at the top of the script.
 
 ## Printing the Booklet
 
