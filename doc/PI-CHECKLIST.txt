@@ -1,0 +1,64 @@
+Turtle book: what still needs the real Pi before printing
+==========================================================
+
+Short answer: one thing. Everything else in the book has been checked on a
+development machine running the same package versions the Pi should have
+(ucblogo 6.2.2-2, python3-pcbasic 2.0.4-3, both from Debian). Start by
+confirming the versions match; if they do, the checks below are all that
+is left.
+
+    dpkg -l ucblogo python3-pcbasic
+
+
+Must check (affects printed text)
+---------------------------------
+
+[ ] Sound in PC-BASIC. Open "Write BASIC Programs" from the menu and type:
+
+        PLAY "C D E"
+        BEEP
+
+    Hear notes and a beep -> the music chapter and the countdown's BEEP
+    stand. Silence -> drop the "Music" section of chapter 19 and line 70
+    (BEEP) of COUNTDOWN.BAS before printing. Nothing else depends on it;
+    PLAY "P2" still pauses one second even with no audio device.
+
+
+Nice to check (does not change the text)
+----------------------------------------
+
+[ ] Stopping Logo. Type  repeat 100000 [fd 1 rt 1]  then open the Logo
+    menu at the top of the window and pick Stop. The ? prompt should come
+    back (verified here). Then try the shortcut the menu shows, Alt+S;
+    it did not respond to simulated keys here, so the book only mentions
+    it as "still to be tried". Ctrl+C does nothing while Logo runs a
+    program. Ctrl+Alt+Backspace always works as the last resort.
+
+[ ] Ctrl+C in BASIC. Type  10 GOTO 10  then  RUN  then Ctrl+C. It should
+    say Break. PC-BASIC's default (--ctrl-c-break=True) makes Ctrl+C
+    behave like Ctrl+Break, so the kidbook's advice and HELLO.BAS's
+    "Ctrl+Break" are both right.
+
+[ ] Screen fit. The figures were drawn in an 820x430 Logo window. On the
+    Pi's screen everything will be at least that big, but  street  (three
+    houses) and  spiral 10  are the widest drawings; glance at them once.
+
+[ ] save "mine.lg  then  bye, reopen Logo,  load "mine.lg. The file goes
+    wherever the menu starts Logo from, which is the same every time, so
+    this should just work; if it does not, the book's chapter 6 needs a
+    different word than "mine.lg".
+
+
+Already verified without the Pi (for the record)
+------------------------------------------------
+
+- All 31 programs run without error (tools/check-programs.sh), including
+  the keyboard game, which was driven with simulated keys.
+- FILL fills, SETLABELHEIGHT enlarges labels, and Logo menu -> Stop
+  interrupts a runaway recursion in the wx UCBLogo window.
+- PC-BASIC: a FOR/NEXT busy loop takes no measurable time, so the
+  countdown uses PLAY "P2" (a one-second rest) instead. Measured at one
+  second in both the headless and the graphical interface, with and
+  without an audio device.
+- The four Logo error messages quoted in chapter 13 are UCBLogo's actual
+  wording.
