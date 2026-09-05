@@ -25,7 +25,11 @@ LOGFILE="$LOG_DIR/$(date +%Y-%m-%d).log"
 
 SALLY_FILE="$KIDBOX_DIR/typing/sally.txt"
 PENNY_FILE="$KIDBOX_DIR/typing/penny.txt"
-LOGO_WELCOME="$KIDBOX_DIR/logo/welcome.lg"
+LOGO_WELCOME="$KIDBOX_DIR/presets/welcome.lg"
+# Logo and BASIC save into whatever directory they were started from, so
+# each starts in its own folder rather than the home directory.
+LOGO_DIR="$KIDBOX_DIR/logo"
+BASIC_DIR="$KIDBOX_DIR/basic"
 CLOCK_SCRIPT="$HOME/bin/clock.sh"
 TIMER_SCRIPT="$HOME/bin/timer.sh"
 STOPWATCH_SCRIPT="$HOME/bin/stopwatch.sh"
@@ -153,8 +157,8 @@ while true; do
     1) run_x leafpad "$SALLY_FILE" ;;
     2) run_x leafpad "$PENNY_FILE" ;;
     3) run_x tuxpaint ;;
-    4) run_x ucblogo "$LOGO_WELCOME" ;;
-    5) run_x pcbasic ;;
+    4) (cd "$LOGO_DIR" && run_x ucblogo "$LOGO_WELCOME") ;;
+    5) (cd "$BASIC_DIR" && run_x pcbasic) ;;
     6) run_x "$CLOCK_SCRIPT" ;;
     7) run_x "$TIMER_SCRIPT" ;;
     8) run_x "$STOPWATCH_SCRIPT" ;;

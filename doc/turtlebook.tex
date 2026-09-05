@@ -322,10 +322,11 @@ sides & turn & \\
 \draftnote{Useful words about words: \texttt{po "square} shows the lesson
   back to you (the quote mark is part of it); \texttt{pots} lists every
   word you have taught; \texttt{erase "square} forgets one. \par
-  Words are forgotten when Logo closes. \texttt{save "mine.lg} writes them
-  all to a file and \texttt{load "mine.lg} brings them back next time.
-  The file lands wherever Logo was started from, which the menu keeps
-  the same every time, so \texttt{load} finds it again.}
+  Words are forgotten when Logo closes. \texttt{save "mine.lg} tells Logo
+  to remember them all under the name \texttt{mine.lg}, and next time
+  \texttt{load "mine.lg} brings every one of them back.}
+% Author note: the menu starts Logo inside kidbox/logo, so the saved file
+% always ends up where load looks. No need to explain that to the reader.
 
 \begin{trythis}[Try]
 \begin{itemize}
@@ -406,10 +407,11 @@ sides & turn & \\
   \texttt{stop} ends the lesson and the turtle rests. Ask what would
   happen without it: it would never stop. The way out is the
   \textbf{Logo} menu at the top of the window, then \textbf{Stop}
-  (verified on this version of UCBLogo; Ctrl+C does nothing while a
-  program runs). The menu shows Alt+S as a shortcut, still to be tried
-  on the Pi. If all else fails, \key{Ctrl}+\key{Alt}+\key{Backspace}
-  leaves Logo for the menu, as the kidbook says.}
+  (\key{Ctrl}+\key{C} does nothing while a program runs). If all else
+  fails, \key{Ctrl}+\key{Alt}+\key{Backspace} leaves Logo for the menu,
+  as the kidbook says.}
+% Author note: the Logo menu lists Alt+S next to Stop, but it does not
+% respond on the Pi (checked 2026-09-04), so the book only shows the mouse.
 
 \logoprogram{spiral}
 \drawing[1.5in]{spiral}

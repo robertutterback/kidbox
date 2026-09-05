@@ -1,52 +1,43 @@
-Turtle book: what still needs the real Pi before printing
-==========================================================
+Turtle book: Pi checks before printing
+======================================
 
-Short answer: one thing. Everything else in the book has been checked on a
-development machine running the same package versions the Pi should have
-(ucblogo 6.2.2-2, python3-pcbasic 2.0.4-3, both from Debian). Start by
-confirming the versions match; if they do, the checks below are all that
-is left.
-
-    dpkg -l ucblogo python3-pcbasic
+Checked on the Pi on 2026-09-04 (ucblogo 6.2.2-3+b1, python3-pcbasic
+2.0.5-1; the book was developed against 6.2.2-2 and 2.0.4-3, and nothing
+below turned on the difference).
 
 
-Must check (affects printed text)
----------------------------------
+Results
+-------
 
-[ ] Sound in PC-BASIC. Open "Write BASIC Programs" from the menu and type:
+[x] Sound in PC-BASIC works. The Music section of chapter 19 and the
+    BEEP in COUNTDOWN.BAS stay.
 
-        PLAY "C D E"
-        BEEP
+[x] Ctrl+C in BASIC breaks a running program, as the books say.
 
-    Hear notes and a beep -> the music chapter and the countdown's BEEP
-    stand. Silence -> drop the "Music" section of chapter 19 and line 70
-    (BEEP) of COUNTDOWN.BAS before printing. Nothing else depends on it;
-    PLAY "P2" still pauses one second even with no audio device.
+[x] Stopping Logo: the Logo menu's Stop item works. Alt+S does not
+    respond on the Pi (possibly no Alt shortcut does). The book now
+    says so and presents Stop as a mouse action only.
+
+[!] save / load in Logo did NOT round-trip. Cause found: the menu was
+    starting Logo and BASIC from the home directory, so saved files
+    (mine.lg, STARS.BAS) landed loose in /home/girls. The menu now
+    starts Logo in kidbox/logo and BASIC in kidbox/basic, and the
+    starter files moved to a root-owned kidbox/presets. Re-test after
+    reinstalling:
+
+        save "mine.lg   then   bye, reopen Logo,   load "mine.lg   then   pots
+
+    If load still brings nothing back while the file exists in
+    kidbox/logo, look at the file itself (cat ~girls/kidbox/logo/mine.lg):
+    save should have written the "to ... end" blocks.
 
 
-Nice to check (does not change the text)
-----------------------------------------
-
-[ ] Stopping Logo. Type  repeat 100000 [fd 1 rt 1]  then open the Logo
-    menu at the top of the window and pick Stop. The ? prompt should come
-    back (verified here). Then try the shortcut the menu shows, Alt+S;
-    it did not respond to simulated keys here, so the book only mentions
-    it as "still to be tried". Ctrl+C does nothing while Logo runs a
-    program. Ctrl+Alt+Backspace always works as the last resort.
-
-[ ] Ctrl+C in BASIC. Type  10 GOTO 10  then  RUN  then Ctrl+C. It should
-    say Break. PC-BASIC's default (--ctrl-c-break=True) makes Ctrl+C
-    behave like Ctrl+Break, so the kidbook's advice and HELLO.BAS's
-    "Ctrl+Break" are both right.
+Still to glance at (does not change the text)
+---------------------------------------------
 
 [ ] Screen fit. The figures were drawn in an 820x430 Logo window. On the
     Pi's screen everything will be at least that big, but  street  (three
-    houses) and  spiral 10  are the widest drawings; glance at them once.
-
-[ ] save "mine.lg  then  bye, reopen Logo,  load "mine.lg. The file goes
-    wherever the menu starts Logo from, which is the same every time, so
-    this should just work; if it does not, the book's chapter 6 needs a
-    different word than "mine.lg".
+    houses) and  spiral 10  are the widest drawings; look at them once.
 
 
 Already verified without the Pi (for the record)

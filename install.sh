@@ -77,6 +77,9 @@ echo "[kidbox] Creating directories..."
 install -d -m 0755 "$KID_BIN_DIR"
 install -d -m 0755 "$KIDBOX_DIR"
 install -d -m 0755 "$KIDBOX_DIR/typing" "$KIDBOX_DIR/basic" "$KIDBOX_DIR/logo"
+# Starter files live apart from the kid's own work so a stray SAVE cannot
+# overwrite them; presets is handed back to root below.
+install -d -m 0755 "$KIDBOX_DIR/presets"
 
 # -------------------------------
 # Install scripts
@@ -134,9 +137,12 @@ for f in "$REPO_ROOT/content/typing/"*.txt; do
   fi
 done
 
-# BASIC + Logo: copy "example" files; safe to overwrite (they're templates)
-install -m 0644 "$REPO_ROOT/content/basic/HELLO.BAS" "$KIDBOX_DIR/basic/HELLO.BAS"
-install -m 0644 "$REPO_ROOT/content/logo/welcome.lg" "$KIDBOX_DIR/logo/welcome.lg"
+# BASIC + Logo starters: safe to overwrite (they're templates). The menu
+# starts each program inside kidbox/basic or kidbox/logo, so files the kid
+# saves land there, next to nothing they can break.
+install -m 0644 "$REPO_ROOT/content/basic/HELLO.BAS" "$KIDBOX_DIR/presets/HELLO.BAS"
+install -m 0644 "$REPO_ROOT/content/logo/welcome.lg" "$KIDBOX_DIR/presets/welcome.lg"
+rm -f "$KIDBOX_DIR/basic/HELLO.BAS" "$KIDBOX_DIR/logo/welcome.lg"
 
 # Book PDF: copy if exists
 if [[ -f "$REPO_ROOT/doc/kidbook.pdf" ]]; then
@@ -223,6 +229,8 @@ rm -f "$tmp"
 # -------------------------------
 echo "[kidbox] Fixing ownership..."
 chown -R "$KID_USER":"$KID_USER" "$KID_HOME/.xinitrc" "$KID_HOME/.xbindkeysrc" "$KID_HOME/.xbindkeysrc-web" "$KID_HOME/.Xresources" "$KID_HOME/.kidbox-browser" "$KID_BIN_DIR" "$KIDBOX_DIR" "$BASH_PROFILE"
+# Read-only for the kid: root-owned files in a root-owned directory.
+chown -R root:root "$KIDBOX_DIR/presets"
 
 # -------------------------------
 # Sudoers: Allow kid user to shutdown
