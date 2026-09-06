@@ -79,12 +79,13 @@ MENU_ITEMS=(
   10 "Look Up a Word"
 )
 
-# Website items come from $SITES_CONF, read fresh every time the menu is drawn
-# so that adding or removing a site is a one-line edit with no reinstall. The
+# Website items come from $SITES_CONF, read fresh every time the menu is drawn,
+# so the menu shows a new site as soon as install.sh has written the file. The
 # browser allowlist is generated from the same file by kidbox-gen-policy.py.
 #
-# Tags start at 11 and Shutdown sits at 20, so adding a website never shifts
-# the number of anything a kid may have memorised.
+# Numbering runs straight on from the activities above: websites take 11, 12,
+# 13... and Shutdown takes whatever number comes next. No gaps, no reserved
+# numbers.
 declare -A SITE_URL=()
 declare -A SITE_SLUG=()
 site_tag=11
@@ -105,7 +106,8 @@ if [[ -r "$SITES_CONF" ]]; then
   done < "$SITES_CONF"
 fi
 
-MENU_ITEMS+=( 20 "Shutdown Computer" )
+SHUTDOWN_TAG=$site_tag
+MENU_ITEMS+=( "$SHUTDOWN_TAG" "Shutdown Computer" )
 
 if [[ "$DEV_MODE" == true ]]; then
   MENU_TITLE+=" [dev mode]"
@@ -164,7 +166,7 @@ while true; do
     8) run_x "$STOPWATCH_SCRIPT" ;;
     9) run_x chromium-browser --kiosk --app="file://$BOOK_PDF" ;;
     10) run_x "$DICTIONARY_SCRIPT" ;;
-    20) sudo shutdown -h now ;;
+    "$SHUTDOWN_TAG") sudo shutdown -h now ;;
     0) exit 0 ;;
     *)
       # Website tags are assigned above, so look the choice up instead of
