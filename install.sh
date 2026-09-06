@@ -14,6 +14,10 @@ fi
 # -------------------------------
 KID_USER="${KID_USER:-girls}"
 
+# Upstream DNS: CleanBrowsing Family Filter. Set KIDBOX_DNS="" to leave the
+# machine's DNS alone. IPv6 is listed deliberately -- see the DNS section.
+KIDBOX_DNS="${KIDBOX_DNS-185.228.168.168 185.228.169.168 2a0d:2a00:1:: 2a0d:2a00:2::}"
+
 # Create kid user if missing
 if ! id -u "$KID_USER" >/dev/null 2>&1; then
   echo "[kidbox] Creating user '$KID_USER'..."
@@ -166,6 +170,63 @@ if [[ -f "$REPO_ROOT/content/timer.mp3" ]]; then
 fi
 if [[ -f "$REPO_ROOT/content/alarm.mp3" ]]; then
   install -m 0644 "$REPO_ROOT/content/alarm.mp3" "$KIDBOX_DIR/alarm.mp3"
+fi
+
+# -------------------------------
+# DNS
+#
+# Point the machine at a filtering resolver. This is a backstop, not the main
+# boundary -- the Chromium allowlist is that, and it already blocks everything
+# not named in sites.conf. DNS filtering earns its place by covering the case
+# where the policy does not load at all (the managed-policy directory name
+# differs per browser build, which is why the generator writes two of them).
+#
+# Both IPv4 and IPv6 servers are set. Setting only IPv4 leaves the filter open
+# on any network that hands out IPv6: the router advertises its own resolver,
+# the box happily uses it, and nothing looks wrong.
+#
+# The kid user cannot undo this -- its only sudo right is /sbin/shutdown.
+# -------------------------------
+if [[ -n "$KIDBOX_DNS" ]]; then
+  echo "[kidbox] Configuring DNS..."
+
+  if systemctl is-active --quiet NetworkManager; then
+    # Bookworm and later. A global-dns section overrides whatever DHCP offers,
+    # for every connection, so this does not need to name an interface.
+    install -d -m 0755 /etc/NetworkManager/conf.d
+    {
+      echo "# Managed by kidbox install.sh. Edits here are overwritten."
+      echo "[global-dns-domain-*]"
+      echo "servers=$(echo "$KIDBOX_DNS" | tr ' ' ',')"
+    } > /etc/NetworkManager/conf.d/kidbox-dns.conf
+    chmod 0644 /etc/NetworkManager/conf.d/kidbox-dns.conf
+    systemctl reload-or-restart NetworkManager
+    echo "[kidbox]   NetworkManager: $KIDBOX_DNS"
+
+  elif systemctl is-active --quiet dhcpcd; then
+    # Bullseye and earlier. Idempotent using markers, as with .bash_profile.
+    DNS_BEGIN="# >>> kidbox dns >>>"
+    DNS_END="# <<< kidbox dns <<<"
+    tmp="$(mktemp)"
+    awk -v b="$DNS_BEGIN" -v e="$DNS_END" '
+      $0==b {inblock=1; next}
+      $0==e {inblock=0; next}
+      !inblock {print}
+    ' /etc/dhcpcd.conf > "$tmp"
+    cat "$tmp" > /etc/dhcpcd.conf
+    rm -f "$tmp"
+    {
+      echo "$DNS_BEGIN"
+      echo "static domain_name_servers=$KIDBOX_DNS"
+      echo "$DNS_END"
+    } >> /etc/dhcpcd.conf
+    systemctl restart dhcpcd
+    echo "[kidbox]   dhcpcd: $KIDBOX_DNS"
+
+  else
+    echo "[kidbox]   WARNING: neither NetworkManager nor dhcpcd is running." >&2
+    echo "[kidbox]   DNS was NOT changed. Set it on the router instead." >&2
+  fi
 fi
 
 # -------------------------------

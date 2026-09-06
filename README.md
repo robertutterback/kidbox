@@ -182,6 +182,41 @@ drawn, and `kidbox-gen-policy.py` turns it into the Chromium policy; you can
 run that generator alone (`sudo kidbox-gen-policy.py`) if you are only
 rebuilding the policy from an already-installed config.
 
+### DNS
+
+`install.sh` points the machine at [CleanBrowsing's Family
+Filter](https://cleanbrowsing.org/filters/), IPv4 and IPv6:
+
+```
+185.228.168.168   185.228.169.168
+2a0d:2a00:1::     2a0d:2a00:2::
+```
+
+It writes `/etc/NetworkManager/conf.d/kidbox-dns.conf` on Bookworm and later,
+or a marked block in `/etc/dhcpcd.conf` on Bullseye, picking whichever service
+is actually running. If neither is, it warns and changes nothing rather than
+writing a `/etc/resolv.conf` that the next DHCP lease overwrites.
+
+Override with `sudo KIDBOX_DNS="1.1.1.3 1.0.0.3" ./install.sh`, or
+`KIDBOX_DNS=""` to leave the machine's DNS alone.
+
+Two things worth knowing:
+
+- **This is a backstop, not the boundary.** The Chromium allowlist is the
+  boundary and it already blocks everything not in `sites.conf`. DNS filtering
+  earns its keep by covering the case where the policy fails to load at all.
+- **IPv6 is set on purpose.** Configuring only the IPv4 servers leaves the
+  filter wide open on any network handing out IPv6 — the router advertises its
+  own resolver, the Pi uses it, and nothing appears wrong.
+
+The policy also sets `DnsOverHttpsMode: "off"`. Chromium otherwise resolves
+names over its own DoH connection, which never touches the system resolver and
+would sail straight past the filter. CleanBrowsing documents this as a
+[required hardening step](https://cleanbrowsing.org/support/troubleshooting/harden-chrome).
+
+The kid user cannot undo any of it — its only sudo right is
+`/sbin/shutdown -h now`.
+
 ### How the lockdown works
 
 Sites open with `chromium-browser --kiosk --app=URL`, which means no address

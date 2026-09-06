@@ -102,6 +102,11 @@ def build_policy(domains):
       "DefaultGeolocationSetting": 2,
       "DefaultNotificationsSetting": 2,
 
+      # Chromium can do its own DNS over HTTPS, which resolves names without
+      # going near the system resolver -- and so straight past the filtering
+      # DNS that install.sh configures. Force it back onto the system one.
+      "DnsOverHttpsMode": "off",
+
       # Belt and braces on the search sites that are not in the allowlist.
       "ForceGoogleSafeSearch": True,
       "ForceYouTubeRestrict": 2,
