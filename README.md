@@ -159,24 +159,28 @@ reads the file as it is.
 
 ## Websites
 
-Website menu items are defined in `/etc/kidbox/sites.conf`. Each line is
-either a menu item or an allowlist entry:
+Website menu items are defined in `config/sites.conf` **in this repo**. Each
+line is either a menu item or an allowlist entry:
 
 ```
 SITE|IXL (School Practice)|https://www.ixl.com/signin|ixl.com
 ALLOW|starfall.com,abcya.com
 ```
 
-`menu.sh` reads the file every time the menu is drawn, so adding or removing a
-`SITE` line takes effect immediately. Changing which domains are *reachable*
-means regenerating the browser policy:
+The repo copy is the source of truth. `install.sh` copies it to
+`/etc/kidbox/sites.conf`, overwriting what is there, then regenerates the
+browser policy from it. So the workflow for adding a site is:
 
 ```bash
-sudo kidbox-gen-policy.py
+# edit config/sites.conf, commit, then on the Pi:
+sudo ./install.sh
 ```
 
-`install.sh` does this for you, and will not overwrite an edited
-`sites.conf` (it prints a diff hint if the repo copy has changed).
+Do not edit `/etc/kidbox/sites.conf` on the machine — the next install
+overwrites it. `menu.sh` reads that installed copy every time the menu is
+drawn, and `kidbox-gen-policy.py` turns it into the Chromium policy; you can
+run that generator alone (`sudo kidbox-gen-policy.py`) if you are only
+rebuilding the policy from an already-installed config.
 
 ### How the lockdown works
 

@@ -171,20 +171,18 @@ fi
 # -------------------------------
 # Website list + Chromium allowlist
 #
-# sites.conf is the single source of truth: menu.sh reads it for the website
-# menu items, and kidbox-gen-policy.py turns it into the browser's managed
-# policy. It is not overwritten on reinstall, since the live file is the one
-# that has been edited to add sites.
+# config/sites.conf in the repo is the single source of truth, for both the
+# website menu (menu.sh reads the installed copy directly) and the browser's
+# managed policy. This overwrites the installed copy every run: a site is
+# added by editing the repo and reinstalling, never by editing the file on the
+# machine. Unlike the typing files above, nothing here is kid-written, so
+# there is nothing to preserve -- and preserving it would silently strand the
+# machine on an old allowlist while the install still reported success.
 # -------------------------------
 echo "[kidbox] Installing website list..."
 
 install -d -m 0755 /etc/kidbox
-if [[ ! -f /etc/kidbox/sites.conf ]]; then
-  install -m 0644 "$REPO_ROOT/config/sites.conf" /etc/kidbox/sites.conf
-elif ! cmp -s "$REPO_ROOT/config/sites.conf" /etc/kidbox/sites.conf; then
-  echo "[kidbox] Keeping existing /etc/kidbox/sites.conf (differs from the repo copy)."
-  echo "[kidbox] To see what changed: diff /etc/kidbox/sites.conf $REPO_ROOT/config/sites.conf"
-fi
+install -m 0644 "$REPO_ROOT/config/sites.conf" /etc/kidbox/sites.conf
 
 echo "[kidbox] Generating Chromium policy..."
 install -m 0755 "$REPO_ROOT/bin/kidbox-gen-policy.py" "/usr/local/bin/kidbox-gen-policy.py"
