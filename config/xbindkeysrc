@@ -2,3 +2,21 @@
 # Ctrl + Alt + Backspace
 "pkill -TERM Xorg"
   control+alt + BackSpace
+
+# Volume. Media keys where the keyboard has them, Ctrl+Alt+arrows where it
+# does not. Every launch resets to 100% (see run_x in menu.sh), so these
+# only last for the current app.
+"$HOME/bin/kidbox-volume.sh up"
+  XF86AudioRaiseVolume
+"$HOME/bin/kidbox-volume.sh up"
+  control+alt + Up
+
+"$HOME/bin/kidbox-volume.sh down"
+  XF86AudioLowerVolume
+"$HOME/bin/kidbox-volume.sh down"
+  control+alt + Down
+
+"$HOME/bin/kidbox-volume.sh mute"
+  XF86AudioMute
+"$HOME/bin/kidbox-volume.sh mute"
+  control+alt + m

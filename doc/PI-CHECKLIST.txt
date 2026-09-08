@@ -39,6 +39,14 @@ Still to glance at (does not change the text)
     Pi's screen everything will be at least that big, but  street  (three
     houses) and  spiral 10  are the widest drawings; look at them once.
 
+[ ] Volume keys (added 2026-09-08). Inside Logo, with the timer running,
+    and on a website: Ctrl+Alt+Up / Down should step the volume, and
+    the keyboard's own volume keys should do the same if it has them.
+    Run  amixer scontrols  once to confirm the mixer is called Master
+    or PCM; kidbox-volume.sh nudges both and ignores whichever is
+    missing, so a differently named control would make the keys do
+    nothing.
+
 
 Already verified without the Pi (for the record)
 ------------------------------------------------

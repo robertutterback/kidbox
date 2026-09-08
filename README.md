@@ -245,8 +245,10 @@ own user** (that URL is blocked for the kid user).
 - **Browsing is stateless.** Each launch wipes its profile under
   `~/.kidbox-browser/<slug>/`, so no cookies, logins or cache survive a
   session — nothing accumulates on the SD card.
-- **Volume drops to 60%** for websites, since they autoplay and 100% is
-  meant for the timer alarm. `run_x` resets it to 100% before every launch.
+- **Volume starts at 100%** on every launch, so the timer alarm is loud.
+  Inside any app, the keyboard's volume keys or `Ctrl+Alt+Up` / `Down` (and
+  `Ctrl+Alt+M` to mute) adjust it via `bin/kidbox-volume.sh`; the change
+  lasts until the next launch.
 - **Esc goes back.** Kiosk + app mode has no back button, so a kid who
   clicks a link to a blocked domain would be stranded on the block page.
   `~/.xbindkeysrc-web` maps Esc to Alt+Left, and is loaded only while a

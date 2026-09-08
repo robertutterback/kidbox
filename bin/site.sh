@@ -21,13 +21,6 @@ PROFILE="$HOME/.kidbox-browser/$SLUG"
 rm -rf "$PROFILE"
 mkdir -p "$PROFILE"
 
-# run_x sets the volume to 100% before every launch so the timer alarm is
-# loud. Websites autoplay, and 100% is startling; turn it down for ourselves
-# only, since the next launch resets it.
-WEB_VOLUME="${KIDBOX_WEB_VOLUME:-60%}"
-amixer -q sset Master "$WEB_VOLUME" 2>/dev/null || true
-amixer -q sset PCM "$WEB_VOLUME" 2>/dev/null || true
-
 # Esc = go back. Kiosk + app mode has no back button, so a kid who clicks a
 # link to a blocked domain would otherwise be stranded on the block page with
 # no way to the page they came from. Alt+Left works natively; this makes Esc

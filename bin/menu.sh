@@ -49,8 +49,9 @@ run_x() {
   local timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
   echo "[$timestamp] Starting: $*" >> "$LOGFILE"
 
-  # Reset the volume on every launch: the timer alarm needs it loud, and
-  # site.sh turns it down for websites only.
+  # Reset the volume on every launch so the timer alarm is always loud.
+  # Inside an app the volume keys (kidbox-volume.sh) can turn it down; that
+  # lasts until the next launch.
   amixer -q sset Master 100% unmute 2>/dev/null || true
   amixer -q sset PCM 100% unmute 2>/dev/null || true
 
