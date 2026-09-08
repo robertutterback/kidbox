@@ -56,8 +56,9 @@ sudo ./install.sh
 There are two books in `doc/`:
 
 - `kidbook.tex` — the short instruction book for the whole computer.
-- `turtlebook.tex` — a longer, guided Logo book (with a little BASIC at
-  the end) for a stronger reader.
+- `turtlebook.tex` — a longer, guided Logo book for a stronger reader,
+  written to be read alone. (A BASIC book is planned separately; the
+  BASIC programs under `doc/programs/basic/` are kept for it.)
 
 If you need to rebuild them, I recommend doing it on a normal development
 machine, unless you really want to install texlive on your Pi.

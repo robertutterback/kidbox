@@ -9,8 +9,8 @@ below turned on the difference).
 Results
 -------
 
-[x] Sound in PC-BASIC works. The Music section of chapter 19 and the
-    BEEP in COUNTDOWN.BAS stay.
+[x] Sound in PC-BASIC works. (BASIC has since moved out of the turtle
+    book into a planned separate book; PLAY and BEEP can stay in it.)
 
 [x] Ctrl+C in BASIC breaks a running program, as the books say.
 
