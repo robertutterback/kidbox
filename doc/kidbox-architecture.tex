@@ -718,8 +718,7 @@ session. kidbox's is about as small as a usable graphical environment gets:
 xset s on; xset s 600; xset +dpms; xset dpms 0 0 600   # blank after 10 min
 [ -f ~/.Xresources ] && xrdb -merge ~/.Xresources       # load fonts/DPI
 unclutter -idle 3 &                                     # hide idle cursor
-matchbox-window-manager -use_titlebar no \
-   -use_lowlight -use_fullscreen &                      # minimal WM
+matchbox-window-manager -use_titlebar no -use_lowlight & # minimal WM
 xbindkeys &                                             # global hotkeys
 if [ -n "${KID_APP:-}" ]; then
   exec "$KID_APP" ${KID_ARGS:-}                         # become the app
@@ -743,9 +742,15 @@ colours, DPI). More on this just below.
 3 idle seconds, so a forgotten cursor doesn't sit on the drawing.
 \item \textbf{Window manager (\texttt{matchbox}).} A window manager decides
 where windows go and draws their frames. \texttt{matchbox-window-manager} is a
-minimalist WM designed for small/embedded screens; kidbox starts it with
-\emph{no} title bars and \emph{fullscreen}, so the single app fills the display
-with no decorations to poke at.
+minimalist WM designed for small/embedded screens, and its whole design is
+\emph{one application window at a time, sized to fill the display} --- that is
+not an option kidbox switches on, it is what matchbox does. The only thing left
+to turn off is the title bar, so the app fills the screen with no decorations to
+poke at. Matchbox makes one exception: a window that declares itself a
+\emph{dock} (\code{\_NET\_WM\_WINDOW\_TYPE\_DOCK}) is pinned to a screen
+edge and stays visible, and the app is shrunk to fit around it. That is the hook
+for anything that must be on screen \emph{alongside} an app, such as a
+time-limit countdown.
 \item \textbf{Hotkeys (\texttt{xbindkeys}).} A daemon that binds key
 combinations to commands, independent of which app has focus (see below).
 \item \textbf{\code{exec} the app.} The script \emph{becomes} the chosen program
