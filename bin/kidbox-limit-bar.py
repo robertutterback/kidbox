@@ -103,7 +103,9 @@ def main():
       return
 
     if left > SHOW_SECONDS_BELOW:
-      label.config(text=f"Time left today:  {left // 60} min")
+      # Rounded up: "3 min" means under three minutes, and at exactly 2:00
+      # the seconds view takes over from "3 min".
+      label.config(text=f"Time left today:  {(left + 59) // 60} min")
     else:
       turn_red()
       label.config(text=f"Time left today:  {left // 60}:{left % 60:02d}")

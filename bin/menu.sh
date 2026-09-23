@@ -228,7 +228,7 @@ while true; do
     name="${MENU_ITEMS[i+1]}"
     if [[ -n "${LIMITED_TAG[$tag]:-}" ]]; then
       if (( used < budget )); then
-        name+="  ($(( (budget - used) / 60 )) min left today)"
+        name+="  ($(( (budget - used + 59) / 60 )) min left today)"
       else
         name+="  (all done for today)"
       fi
