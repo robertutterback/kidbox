@@ -3,16 +3,21 @@
 app shrunk to make room.
 
 Matchbox shows one application window at a time, sized to fill the screen,
-so a plain xterm or xmessage cannot share the display with Chromium. The
-exception is a window of type _NET_WM_WINDOW_TYPE_DOCK: matchbox pins it to
-a screen edge and shrinks the app to fit around it. Tk sets that type with
-attributes('-type', 'dock'). This script does exactly that, so the idea can
-be proved on the Pi before a time-limit feature is built on it.
+so a plain xterm or xmessage cannot share the display with Chromium. Two
+window types are exceptions and matchbox shrinks the app around them:
 
-Matchbox picks the edge from the window's shape and position: wider than
-tall and in the top half means the top edge. It needs to be running -- on
-bare X nothing reserves space and nothing grants Chromium's fullscreen
-request either, so the first thing printed is whether it is.
+  toolbar  (_NET_WM_WINDOW_TYPE_TOOLBAR)  always along the bottom edge
+  dock     (_NET_WM_WINDOW_TYPE_DOCK)     edge chosen from its geometry
+
+The difference that matters: Chromium --kiosk is a FULLSCREEN client, and
+for those matchbox ignores docks (a dock ends up drawn over the page) but
+still subtracts toolbars. So toolbar is the default here. Tk sets the type
+with attributes('-type', ...). This script does exactly that, so the idea
+can be proved on the Pi before a time-limit feature is built on it.
+
+Matchbox needs to be running -- on bare X nothing reserves space and
+nothing grants Chromium's fullscreen request either, so the first thing
+printed is whether it is.
 
 Not installed by install.sh. From an admin shell (SSH, or a console logged
 in as yourself -- the kid user has no password and its login runs the
@@ -23,8 +28,8 @@ menu), with a website open on the Pi:
   3. sudo -H -u girls DISPLAY=:1 /home/girls/bin/dock-test.py 120
   4. Look at the Pi's screen.
 
-Expected: a slim blue strip along the top with a ticking clock, and the
-page resized to start directly beneath it, reaching both side edges, with
+Expected: a slim blue strip along the bottom with a ticking clock, and the
+page resized to end directly above it, reaching both side edges, with
 nothing hidden. Red under a minute. The console prints the window manager
 and every top-level window with its geometry at startup, then a tick per
 second.
@@ -32,6 +37,7 @@ second.
 Options:
   seconds       how long to count down (default 120)
   --height N    strip height in pixels (default 32)
+  --type T      toolbar (default) or dock; see above
   --kill        at zero, run "pkill -TERM Xorg" (what Ctrl+Alt+Backspace
                 does) so the session ends and the menu comes back
 """
@@ -75,6 +81,7 @@ def main():
   ap = argparse.ArgumentParser()
   ap.add_argument("seconds", nargs="?", type=int, default=120)
   ap.add_argument("--height", type=int, default=32)
+  ap.add_argument("--type", choices=["toolbar", "dock"], default="toolbar")
   ap.add_argument("--kill", action="store_true")
   args = ap.parse_args()
   height = args.height
@@ -83,10 +90,13 @@ def main():
 
   root = tk.Tk()
   root.title(TITLE)
-  root.geometry(f"{root.winfo_screenwidth()}x{height}+0+0")
+  # Toolbars go along the bottom whatever we ask for; a dock takes its edge
+  # from where we put it, so ask for the bottom in both cases.
+  y = root.winfo_screenheight() - height
+  root.geometry(f"{root.winfo_screenwidth()}x{height}+0+{y}")
   # Must be set before the window is first mapped, which is why it comes
   # before mainloop() and before any update().
-  root.attributes("-type", "dock")
+  root.attributes("-type", args.type)
 
   root.configure(bg=BLUE)
   label = tk.Label(root, bg=BLUE, fg="white",
