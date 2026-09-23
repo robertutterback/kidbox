@@ -260,6 +260,36 @@ own user** (that URL is blocked for the kid user).
 - **Search engines and video sites are deliberately absent.** A search engine
   reaches everything, which defeats the allowlist.
 
+## Screen-Time Limit
+
+Some menu items count against a daily time budget: 20 minutes on weekdays,
+60 at the weekend, shared across all of them. Right now that is only IXL.
+The numbers and the list live in the "Daily screen-time limit" block of
+`bin/menu.sh` (`LIMIT_WEEKDAY_MIN`, `LIMIT_WEEKEND_MIN`, `LIMITED_NAMES`).
+Items are named by their menu label, so a website from `sites.conf` and a
+built-in like Tux Paint are added the same way.
+
+While a limited item is running, a slim bar along the bottom of the screen
+shows the time left today: whole minutes until the last two, then a seconds
+countdown in red. At zero it says so and ends the session, and the menu item
+reads "(all done for today)" until tomorrow; picking it anyway gets a message,
+not a launch.
+
+How it works: `menu.sh` reads `~/.kidbox-state/screen-time`
+(`YYYY-MM-DD seconds-used`), treats a file from another day as zero (that is
+the daily reset), and passes the budget and used time into the X session.
+`.xinitrc` starts `kidbox-limit-bar.py`, a matchbox *toolbar* window, so the
+app is resized to leave room rather than being overlapped -- a dock would be
+ignored for a fullscreen client like Chromium's kiosk mode. The bar is the only
+writer of the state file (every 10 seconds and on exit), so a reboot or a quit
+loses at most 10 seconds of used time. It ends the session the same way
+Ctrl+Alt+Backspace does (`pkill -TERM Xorg`).
+
+To grant extra time today, delete the state file:
+```bash
+sudo rm /home/<kiduser>/.kidbox-state/screen-time
+```
+
 ## Power Button Behavior
 
 The physical power button is configured for safe, deliberate shutdown:
@@ -311,4 +341,5 @@ sudo ./install.sh
 - The minimal X session lives at `/home/<kiduser>/.xinitrc`
 - Content lives in `/home/<kiduser>/kidbox`
 - Logs are stored in `/home/<kiduser>/.kidbox-logs/YYYY-MM-DD.log`
+- Screen-time used today is in `/home/<kiduser>/.kidbox-state/screen-time`
 

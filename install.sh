@@ -66,6 +66,7 @@ APT_PACKAGES=(
   console-setup
   kbd
   python3-evdev
+  python3-tk
   xdotool
 )
 
@@ -97,6 +98,9 @@ done
 
 echo "[kidbox] Installing dictionary suggester..."
 install -m 0755 "$REPO_ROOT/bin/dictionary-suggest.py" "$KID_BIN_DIR/dictionary-suggest.py"
+
+echo "[kidbox] Installing screen-time bar..."
+install -m 0755 "$REPO_ROOT/bin/kidbox-limit-bar.py" "$KID_BIN_DIR/kidbox-limit-bar.py"
 
 # -------------------------------
 # Install .xinitrc

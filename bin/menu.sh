@@ -38,6 +38,47 @@ BOOK_PDF="$KIDBOX_DIR/kidbook.pdf"
 SITE_SCRIPT="$HOME/bin/site.sh"
 SITES_CONF="${KIDBOX_SITES_CONF:-/etc/kidbox/sites.conf}"
 
+# -----------------------------------------------------------------------------
+# Daily screen-time limit
+#
+# Minutes per day, shared by every item named in LIMITED_NAMES (menu names,
+# exactly as they appear in MENU_ITEMS below or in sites.conf). The menu
+# refuses to start a limited item once the day's budget is spent, and
+# kidbox-limit-bar.py -- started from .xinitrc when it sees KID_LIMIT_BUDGET --
+# shows the countdown along the bottom of the screen and ends the session at
+# zero. The bar is the only thing that writes the state file, every few
+# seconds, so a reboot loses at most that much.
+#
+# The state file holds "YYYY-MM-DD seconds-used". A file from any other day
+# counts as zero, which is the whole daily reset; a session that runs past
+# midnight is charged to the day it started.
+# -----------------------------------------------------------------------------
+LIMIT_WEEKDAY_MIN=20
+LIMIT_WEEKEND_MIN=60
+LIMITED_NAMES=(
+  "IXL (School Practice)"
+)
+LIMIT_STATE="$HOME/.kidbox-state/screen-time"
+
+limit_budget_secs() {
+  if (( $(date +%u) >= 6 )); then
+    echo $(( LIMIT_WEEKEND_MIN * 60 ))
+  else
+    echo $(( LIMIT_WEEKDAY_MIN * 60 ))
+  fi
+}
+
+limit_used_secs() {
+  local day used
+  # read fails at EOF on a line with no newline, but still fills the vars.
+  if [[ -r "$LIMIT_STATE" ]] && { read -r day used _ < "$LIMIT_STATE" || true; } \
+      && [[ "${day:-}" == "$(date +%F)" && "${used:-}" =~ ^[0-9]+$ ]]; then
+    echo "$used"
+  else
+    echo 0
+  fi
+}
+
 # Function to run X programs with logging
 # Usage: run_x <program> [args...]
 run_x() {
@@ -64,6 +105,30 @@ run_x() {
 
   timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
   echo "[$timestamp] Finished: $KID_APP" >> "$LOGFILE"
+}
+
+# Start the chosen menu item, enforcing the daily limit if it is a limited
+# one. Reads the tag from $CHOICE so the case below reads the same for every
+# item.
+# Usage: launch <program> [args...]
+launch() {
+  if [[ -z "${LIMITED_TAG[$CHOICE]:-}" ]]; then
+    run_x "$@"
+    return
+  fi
+
+  local budget used
+  budget=$(limit_budget_secs)
+  used=$(limit_used_secs)
+  if (( used >= budget )); then
+    whiptail --title "$MENU_TITLE" --msgbox \
+      $'All done with that for today!\n\nIt will be back tomorrow.' 10 50
+    return
+  fi
+
+  # .xinitrc starts the countdown bar when it sees these. Set for this one
+  # call only.
+  KID_LIMIT_BUDGET="$budget" KID_LIMIT_USED="$used" run_x "$@"
 }
 
 MENU_TITLE="Girls' Computer (v$VERSION)"
@@ -110,6 +175,17 @@ fi
 SHUTDOWN_TAG=$site_tag
 MENU_ITEMS+=( "$SHUTDOWN_TAG" "Shutdown Computer" )
 
+# Tags of the limited items, looked up by name so a site can be limited
+# without knowing which number it landed on.
+declare -A LIMITED_TAG=()
+for (( i = 0; i < ${#MENU_ITEMS[@]}; i += 2 )); do
+  for name in "${LIMITED_NAMES[@]}"; do
+    if [[ "${MENU_ITEMS[i+1]}" == "$name" ]]; then
+      LIMITED_TAG[${MENU_ITEMS[i]}]=1
+    fi
+  done
+done
+
 if [[ "$DEV_MODE" == true ]]; then
   MENU_TITLE+=" [dev mode]"
 fi
@@ -143,10 +219,27 @@ while true; do
   TERM_COLS="${COLUMNS:-$(tput cols 2>/dev/null || echo 80)}"
   MENU_ROWS=$(( TERM_LINES - 8 ))
 
+  # Limited items say what is left today, so running out is never a surprise.
+  budget=$(limit_budget_secs)
+  used=$(limit_used_secs)
+  ITEMS=()
+  for (( i = 0; i < ${#MENU_ITEMS[@]}; i += 2 )); do
+    tag="${MENU_ITEMS[i]}"
+    name="${MENU_ITEMS[i+1]}"
+    if [[ -n "${LIMITED_TAG[$tag]:-}" ]]; then
+      if (( used < budget )); then
+        name+="  ($(( (budget - used) / 60 )) min left today)"
+      else
+        name+="  (all done for today)"
+      fi
+    fi
+    ITEMS+=( "$tag" "$name" )
+  done
+
   CHOICE=$(
     whiptail --title "$MENU_TITLE" --nocancel \
       --menu "Choose something to do" "$TERM_LINES" "$TERM_COLS" "$MENU_ROWS" \
-        "${MENU_ITEMS[@]}" \
+        "${ITEMS[@]}" \
       3>&1 1>&2 2>&3
   ) || {
     # Esc / Cancel: exit in dev mode, re-show menu otherwise
@@ -157,23 +250,23 @@ while true; do
   }
 
   case "$CHOICE" in
-    1) run_x leafpad "$SALLY_FILE" ;;
-    2) run_x leafpad "$PENNY_FILE" ;;
-    3) run_x tuxpaint ;;
-    4) (cd "$LOGO_DIR" && run_x ucblogo "$LOGO_WELCOME") ;;
-    5) (cd "$BASIC_DIR" && run_x pcbasic) ;;
-    6) run_x "$CLOCK_SCRIPT" ;;
-    7) run_x "$TIMER_SCRIPT" ;;
-    8) run_x "$STOPWATCH_SCRIPT" ;;
-    9) run_x chromium-browser --kiosk --app="file://$BOOK_PDF" ;;
-    10) run_x "$DICTIONARY_SCRIPT" ;;
+    1) launch leafpad "$SALLY_FILE" ;;
+    2) launch leafpad "$PENNY_FILE" ;;
+    3) launch tuxpaint ;;
+    4) (cd "$LOGO_DIR" && launch ucblogo "$LOGO_WELCOME") ;;
+    5) (cd "$BASIC_DIR" && launch pcbasic) ;;
+    6) launch "$CLOCK_SCRIPT" ;;
+    7) launch "$TIMER_SCRIPT" ;;
+    8) launch "$STOPWATCH_SCRIPT" ;;
+    9) launch chromium-browser --kiosk --app="file://$BOOK_PDF" ;;
+    10) launch "$DICTIONARY_SCRIPT" ;;
     "$SHUTDOWN_TAG") sudo shutdown -h now ;;
     0) exit 0 ;;
     *)
       # Website tags are assigned above, so look the choice up instead of
       # hard-coding a case per site.
       if [[ -n "${SITE_URL[$CHOICE]:-}" ]]; then
-        run_x "$SITE_SCRIPT" "${SITE_URL[$CHOICE]}" "${SITE_SLUG[$CHOICE]}"
+        launch "$SITE_SCRIPT" "${SITE_URL[$CHOICE]}" "${SITE_SLUG[$CHOICE]}"
       fi
       ;;
   esac

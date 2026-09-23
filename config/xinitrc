@@ -28,6 +28,13 @@ matchbox-window-manager -use_titlebar no -use_lowlight no &
 
 xbindkeys &
 
+# Daily screen-time limit (see menu.sh, which sets these for a limited item).
+# The bar is a matchbox toolbar, so the app is sized to leave room for it,
+# and it ends the session when the time is up.
+if [ -n "${KID_LIMIT_BUDGET:-}" ]; then
+  "$HOME/bin/kidbox-limit-bar.py" "$KID_LIMIT_BUDGET" "${KID_LIMIT_USED:-0}" &
+fi
+
 # Run selected app (from run-x.sh)
 if [ -n "${KID_APP:-}" ]; then
   # shellcheck disable=SC2086
