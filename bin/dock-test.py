@@ -1,32 +1,33 @@
 #!/usr/bin/env python3
-"""Experiment: can a countdown strip sit on screen beside a running app?
+"""Experiment: a countdown strip that stays on screen over a running app.
 
-Matchbox shows one application window at a time, sized to fill the screen,
-so a plain xterm or xmessage cannot share the display with Chromium. The
-exception is a window of type _NET_WM_WINDOW_TYPE_DOCK: matchbox pins it to
-a screen edge and shrinks the app to fit around it. Tk sets that type with
-attributes('-type', 'dock'). This script tries exactly that, and nothing
-else, so the idea can be proved on the Pi before a time-limit feature is
-built on it.
+kidbox runs no window manager (see config/xinitrc), so nothing reserves
+screen space for a panel: the app covers the whole screen and the strip
+has to sit on top of it. With no WM, stacking is map order and any app may
+raise itself, so the strip re-raises every tick. It covers a 48px band of
+the app underneath -- the bottom edge by default, where a web page has the
+least going on.
 
-Not installed by install.sh. The kid user has no password and its login
-shell runs the menu, so drive this from an admin shell (SSH, or another
-console) with sudo. With a website open on the Pi:
+One thing to watch for with no WM: keyboard focus follows the pointer. If
+the mouse is parked over the strip, keystrokes go to it, not to the app.
+unclutter hides the pointer but does not move it.
+
+Not installed by install.sh. From an admin shell (SSH, or a console logged
+in as yourself -- the kid user has no password and its login runs the
+menu), with a website open on the Pi:
 
   1. sudo apt-get install python3-tk        (once; not in APT_PACKAGES yet)
   2. sudo install -m 755 bin/dock-test.py /home/girls/bin/
   3. sudo -H -u girls DISPLAY=:1 /home/girls/bin/dock-test.py 120
   4. Look at the Pi's screen.
 
-Expected: a strip across the top with a ticking clock, and Chromium
-resized to sit below it. If Chromium instead covers the strip, kiosk
-mode's own fullscreen is winning; try --override, which bypasses the
-window manager entirely and re-raises itself every tick.
+Expected: a blue strip along the bottom with a ticking clock, over the
+page, staying put while you scroll and click. Red under a minute. Watch
+for flicker (the once-a-second raise) and for the focus problem above.
 
 Options:
   seconds       how long to count down (default 120)
-  --bottom      pin to the bottom edge instead of the top
-  --override    unmanaged override-redirect window instead of a dock
+  --top         put the strip along the top edge instead
   --kill        at zero, run "pkill -TERM Xorg" (what Ctrl+Alt+Backspace
                 does) so the session ends and the menu comes back
 """
@@ -36,36 +37,30 @@ import subprocess
 import sys
 import tkinter as tk
 
-HEIGHT = 64
+HEIGHT = 48
 WARN_SECS = 60
+BLUE = "#1d3557"
+RED = "#c1121f"
 
 
 def main():
   ap = argparse.ArgumentParser()
   ap.add_argument("seconds", nargs="?", type=int, default=120)
-  ap.add_argument("--bottom", action="store_true")
-  ap.add_argument("--override", action="store_true")
+  ap.add_argument("--top", action="store_true")
   ap.add_argument("--kill", action="store_true")
   args = ap.parse_args()
 
   root = tk.Tk()
   root.title("kidbox-dock-test")
   width = root.winfo_screenwidth()
-  y = root.winfo_screenheight() - HEIGHT if args.bottom else 0
+  y = 0 if args.top else root.winfo_screenheight() - HEIGHT
   root.geometry(f"{width}x{HEIGHT}+0+{y}")
+  # Harmless with no WM; keeps a WM from decorating or moving it if one is
+  # ever added.
+  root.overrideredirect(True)
 
-  if args.override:
-    # No WM involvement at all. Stacking is then first-come, so lift()
-    # every tick keeps it above a window mapped later.
-    root.overrideredirect(True)
-  else:
-    # Must be set before the window is first mapped, which is why it comes
-    # before mainloop() and before any update().
-    root.attributes("-type", "dock")
-
-  root.configure(bg="#1d3557")
-  label = tk.Label(root, bg="#1d3557", fg="white",
-                   font=("DejaVu Sans", 28, "bold"))
+  root.configure(bg=BLUE)
+  label = tk.Label(root, bg=BLUE, fg="white", font=("DejaVu Sans", 22, "bold"))
   label.pack(expand=True, fill="both")
 
   state = {"left": args.seconds}
@@ -75,12 +70,12 @@ def main():
     mins, secs = divmod(left, 60)
     label.config(text=f"Time left today:  {mins:02d}:{secs:02d}")
     if left <= WARN_SECS:
-      root.configure(bg="#c1121f")
-      label.config(bg="#c1121f")
+      root.configure(bg=RED)
+      label.config(bg=RED)
     print(f"{mins:02d}:{secs:02d}", flush=True)
 
-    if args.override:
-      root.lift()
+    # Nothing else keeps us on top.
+    root.lift()
 
     if left <= 0:
       label.config(text="All done for today!")

@@ -13,12 +13,17 @@ xset dpms 0 0 600
 # Hide cursor after a few seconds
 unclutter -idle 3 &
 
-# Minimal window manager. Matchbox shows one app window at a time, sized to
-# fill the screen -- that is its design, not an option -- so the only thing to
-# turn off is the title bar. Windows of type _NET_WM_WINDOW_TYPE_DOCK are
-# the exception: matchbox pins them to a screen edge and shrinks the app to
-# fit around them.
-matchbox-window-manager -use_titlebar no -use_lowlight &
+# No window manager. Every kidbox app sizes itself to the whole screen
+# (Chromium --kiosk, Tux Paint's SDL fullscreen, xterm -maximized), so there
+# is nothing to manage. matchbox-window-manager used to be started here with
+# a made-up -use_fullscreen flag; matchbox exits on an unknown option, so it
+# never actually ran and the session was always bare X. When the flag was
+# removed (0cea205) matchbox really started, ignored Chromium's fullscreen
+# request and left it at 1313x1056 in the corner. Bare X is what works.
+#
+# Two consequences of having no WM: keyboard focus follows the pointer, and
+# stacking is map order -- a window that must stay visible over an app has
+# to raise itself.
 
 xbindkeys &
 
