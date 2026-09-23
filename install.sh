@@ -53,6 +53,7 @@ APT_PACKAGES=(
   leafpad
   xserver-xorg
   xinit
+  matchbox-window-manager
   unclutter
   whiptail
   xbindkeys

@@ -718,6 +718,7 @@ session. kidbox's is about as small as a usable graphical environment gets:
 xset s on; xset s 600; xset +dpms; xset dpms 0 0 600   # blank after 10 min
 [ -f ~/.Xresources ] && xrdb -merge ~/.Xresources       # load fonts/DPI
 unclutter -idle 3 &                                     # hide idle cursor
+matchbox-window-manager -use_titlebar no -use_lowlight no &  # minimal WM
 xbindkeys &                                             # global hotkeys
 if [ -n "${KID_APP:-}" ]; then
   exec "$KID_APP" ${KID_ARGS:-}                         # become the app
@@ -739,17 +740,19 @@ the X resource database --- a key/value store of application preferences (fonts,
 colours, DPI). More on this just below.
 \item \textbf{Cursor hiding (\texttt{unclutter}).} Hides the mouse pointer after
 3 idle seconds, so a forgotten cursor doesn't sit on the drawing.
-\item \textbf{No window manager.} A window manager decides where windows go
-and draws their frames. kidbox does not run one: Chromium's kiosk mode, Tux
-Paint's SDL fullscreen and \code{xterm -maximized} each size themselves to the
-whole screen, so there is nothing to manage and no decorations to poke at. (For
-months this script started \texttt{matchbox-window-manager} with a made-up
-\code{-use\_fullscreen} flag. Matchbox exits on an unknown option, so it never
-ran. When the flag was removed and matchbox really started, it ignored
-Chromium's fullscreen request and left it in a small window --- bare X was the
-configuration that worked all along.) Two things follow from having no WM:
-keyboard focus follows the mouse pointer, and stacking is simply map order, so
-anything that must stay visible over an app has to raise itself.
+\item \textbf{Window manager (\texttt{matchbox}).} A window manager decides
+where windows go and draws their frames. \texttt{matchbox-window-manager} is a
+minimalist WM designed for small/embedded screens, and its whole design is
+\emph{one application window at a time, sized to fill the display}. That is
+what makes Chromium's kiosk mode and Tux Paint actually fill the screen: on bare
+X, with no WM to grant the fullscreen request, Chromium sits in a 1313$\times$1056
+window in the corner. The only thing left to turn off is the title bar. Matchbox
+makes one exception: a window that declares itself a \emph{dock}
+(\code{\_NET\_WM\_WINDOW\_TYPE\_DOCK}) is pinned to a screen edge and the app
+is shrunk to fit around it --- the hook for anything that must stay on screen
+\emph{alongside} an app, such as a time-limit countdown. A trap worth recording:
+both options take a yes/no value, and a bare \code{-use\_lowlight} makes matchbox
+print its usage and exit, silently leaving the session with no window manager.
 \item \textbf{Hotkeys (\texttt{xbindkeys}).} A daemon that binds key
 combinations to commands, independent of which app has focus (see below).
 \item \textbf{\code{exec} the app.} The script \emph{becomes} the chosen program
@@ -762,12 +765,14 @@ whole server down --- closing the throwaway-session loop.
 Newcomers often assume ``the window manager'' \emph{is} the desktop. It isn't.
 Under X, drawing windows is the application's job; the window manager only
 decides \emph{where} top-level windows sit, draws their borders/title bars, and
-handles moving, resizing, and focus. That separation is why the same
-application runs unchanged under \texttt{i3}, \texttt{openbox}, or a full
-GNOME shell. kidbox exploits the separation to the limit by running \emph{no}
-window manager at all, which X permits: windows appear wherever the app asks,
-can't be moved, and a ``fullscreen'' app is just a window the size of the
-screen. One app that sizes itself to the screen is a kiosk for free.
+handles moving, resizing, and focus. That separation is why you can swap
+\texttt{matchbox} for \texttt{i3}, \texttt{openbox}, or a full GNOME shell
+without changing a single application. kidbox exploits the separation to the
+limit: by choosing the most minimal WM and turning off even its title bars, it
+gets ``one fullscreen window, no chrome, nothing to manage'' --- a kiosk --- for
+free. You can legally run X with \emph{no} window manager at all, and kidbox
+did so by accident for a day: windows then appear wherever the app asks, can't
+be moved, and nobody grants a fullscreen request.
 \end{deeper}
 
 \subsection{Big fonts everywhere: \texttt{.Xresources}, Xft, and DPI}
@@ -1355,7 +1360,7 @@ logind drop-in we've already met, then \code{systemctl daemon-reload}, enables
 and starts the power watcher, and restarts \texttt{systemd-logind} to pick up the
 new config. The package list at the top (\code{apt-get install} of \texttt{ucblogo},
 \texttt{python3-pcbasic}, \texttt{tuxpaint}, \texttt{xserver-xorg}, \texttt{xinit},
-\texttt{whiptail}, \texttt{xbindkeys},
+\texttt{matchbox-window-manager}, \texttt{whiptail}, \texttt{xbindkeys},
 \texttt{chromium-browser}, \texttt{mpg123}, \texttt{python3-evdev}, and friends) is
 the complete bill of materials for everything described in this report.
 
@@ -1475,7 +1480,7 @@ correcting hand.
 \begin{deeper}[Going deeper: ``simple and explicit'' as an engineering discipline]
 Step back and the whole project rhymes. Every layer chooses the small, legible,
 inspectable option over the powerful, opaque one: a shell installer over Ansible;
-\texttt{xinit} over a display manager; no window manager over a desktop
+\texttt{xinit} over a display manager; \texttt{matchbox} over a desktop
 environment; \texttt{whiptail} over a graphical kiosk framework; an evdev script
 over a black-box appliance; raw \texttt{sudoers} and systemd drop-ins over some
 management layer. Each individual choice is defensible on its own (lighter on the
@@ -1538,6 +1543,7 @@ teletypewriter.
 \item[idempotent] Safe to run repeatedly with the same result --- the installer's
 design goal.
 \item[imposition] Reordering pages so a folded, stapled stack reads correctly.
+\item[matchbox] A minimal window manager for small screens.
 \item[NEWT\_COLORS] Environment variable that recolours \texttt{whiptail};
 abused here to hide the OK button.
 \item[systemd-logind] The systemd service managing login sessions and power keys.

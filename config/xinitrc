@@ -13,17 +13,18 @@ xset dpms 0 0 600
 # Hide cursor after a few seconds
 unclutter -idle 3 &
 
-# No window manager. Every kidbox app sizes itself to the whole screen
-# (Chromium --kiosk, Tux Paint's SDL fullscreen, xterm -maximized), so there
-# is nothing to manage. matchbox-window-manager used to be started here with
-# a made-up -use_fullscreen flag; matchbox exits on an unknown option, so it
-# never actually ran and the session was always bare X. When the flag was
-# removed (0cea205) matchbox really started, ignored Chromium's fullscreen
-# request and left it at 1313x1056 in the corner. Bare X is what works.
+# Minimal window manager. Matchbox shows one app window at a time, sized to
+# fill the screen, and it is what makes Chromium --kiosk and Tux Paint fill
+# the screen at all: on bare X neither sizes itself (Chromium sits at its
+# 1313x1056 default). Windows of type _NET_WM_WINDOW_TYPE_DOCK are pinned to
+# a screen edge and the app is shrunk to fit around them.
 #
-# Two consequences of having no WM: keyboard focus follows the pointer, and
-# stacking is map order -- a window that must stay visible over an app has
-# to raise itself.
+# Both options take a yes/no VALUE. A bare "-use_lowlight" makes matchbox
+# print its usage and exit, leaving no window manager. For months this line
+# ended "-use_lowlight -use_fullscreen", which worked only because
+# "-use_fullscreen" was being read as lowlight's value (anything but "yes"
+# means off).
+matchbox-window-manager -use_titlebar no -use_lowlight no &
 
 xbindkeys &
 
