@@ -5,9 +5,10 @@ Run as root, either directly or via install.sh, after editing sites.conf.
 
 The policy is deny-by-default: everything is blocked, and only the domains
 listed in sites.conf (plus file:// URLs, which the clock and the book need)
-are allowed. It applies to every Chromium launch on the machine, not just to
-website menu items -- that is deliberate, since it means there is no browser
-state in which the allowlist is off.
+are allowed, and BLOCK lines carve paths back out of an allowed domain. It
+applies to every Chromium launch on the machine, not just to website menu
+items -- that is deliberate, since it means there is no browser state in
+which the allowlist is off.
 """
 
 import json
@@ -33,8 +34,9 @@ BASE_ALLOW = ["file://*"]
 
 
 def parse_sites(path):
-  """Return (allowed_domains, site_count) from a sites.conf."""
+  """Return (allowed_domains, blocked_paths, site_count) from a sites.conf."""
   domains = []
+  blocked = []
   sites = 0
 
   with open(path, encoding="utf-8") as f:
@@ -50,6 +52,11 @@ def parse_sites(path):
         if len(fields) < 2:
           sys.exit(f"{path}:{lineno}: ALLOW line has no domains")
         domains += [d for d in fields[1].split(",") if d]
+
+      elif kind == "BLOCK":
+        if len(fields) < 2:
+          sys.exit(f"{path}:{lineno}: BLOCK line has no entries")
+        blocked += [b for b in fields[1].split(",") if b]
 
       elif kind == "SITE":
         if len(fields) < 4:
@@ -70,13 +77,33 @@ def parse_sites(path):
         sys.exit(f"{path}:{lineno}: unknown line type {fields[0]!r}")
 
   # Preserve file order so the generated policy reads like the config.
-  return list(dict.fromkeys(domains)), sites
+  return list(dict.fromkeys(domains)), list(dict.fromkeys(blocked)), sites
 
 
-def build_policy(domains):
+def expand_blocks(domains, blocked):
+  """Repeat each BLOCK entry under every more specific allowed host.
+
+  Chromium compares hosts before paths, so an allow of "www.ixl.com" beats a
+  block of "ixl.com/games" for www.ixl.com/games. The SITE line adds its entry
+  URL's host on its own, so this case is the normal one, not a corner case.
+  """
+  hosts = [d for d in domains if "/" not in d]
+  out = []
+  for entry in blocked:
+    host, sep, path = entry.partition("/")
+    out.append(entry)
+    for h in hosts:
+      if h.lstrip(".").endswith("." + host.lstrip(".")):
+        out.append(h + sep + path)
+  return list(dict.fromkeys(out))
+
+
+def build_policy(domains, blocked):
   return {
-      # Deny everything, then allow back the listed domains.
-      "URLBlocklist": ["*"],
+      # Deny everything, then allow back the listed domains. Chromium picks
+      # the most specific matching filter, so a BLOCK entry with a longer path
+      # than its ALLOW entry ("ixl.com/games" vs "ixl.com") wins.
+      "URLBlocklist": ["*"] + blocked,
       "URLAllowlist": BASE_ALLOW + domains,
 
       # Remove the ways out of a kiosk window that do not need an address bar.
@@ -121,8 +148,9 @@ def main():
   if not os.path.exists(SITES_CONF):
     sys.exit(f"{SITES_CONF} not found. Run install.sh first.")
 
-  domains, sites = parse_sites(SITES_CONF)
-  policy = build_policy(domains)
+  domains, blocked, sites = parse_sites(SITES_CONF)
+  blocked = expand_blocks(domains, blocked)
+  policy = build_policy(domains, blocked)
   blob = json.dumps(policy, indent=2, sort_keys=True) + "\n"
 
   for directory in POLICY_DIRS:
@@ -136,6 +164,10 @@ def main():
   print(f"[kidbox] {sites} website menu item(s), {len(domains)} allowed domain(s):")
   for d in domains:
     print(f"[kidbox]   {d}")
+  if blocked:
+    print(f"[kidbox] {len(blocked)} blocked path(s):")
+    for b in blocked:
+      print(f"[kidbox]   {b}")
   print("[kidbox] Chromium reads policy at startup; already-open windows keep the old one.")
 
 
