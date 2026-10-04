@@ -1,3 +1,8 @@
+; Save and load in kidbox/logo. UCBLogo's window moves itself to the home
+; directory after loading this file, whatever folder the menu started it in,
+; so the menu's cd alone is not enough.
+setprefix "/home/girls/kidbox/logo
+
 setbg 15
 setpc 0
 cs

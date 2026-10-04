@@ -26,8 +26,10 @@ LOGFILE="$LOG_DIR/$(date +%Y-%m-%d).log"
 SALLY_FILE="$KIDBOX_DIR/typing/sally.txt"
 PENNY_FILE="$KIDBOX_DIR/typing/penny.txt"
 LOGO_WELCOME="$KIDBOX_DIR/presets/welcome.lg"
-# Logo and BASIC save into whatever directory they were started from, so
-# each starts in its own folder rather than the home directory.
+# Each starts in its own folder rather than the home directory. That is what
+# decides where BASIC saves. It does not decide it for Logo: UCBLogo's window
+# moves to the home directory once it has loaded welcome.lg, so welcome.lg
+# sets the save folder itself with SETPREFIX.
 LOGO_DIR="$KIDBOX_DIR/logo"
 BASIC_DIR="$KIDBOX_DIR/basic"
 CLOCK_SCRIPT="$HOME/bin/clock.sh"

@@ -145,9 +145,10 @@ for f in "$REPO_ROOT/content/typing/"*.txt; do
   fi
 done
 
-# BASIC + Logo starters: safe to overwrite (they're templates). The menu
-# starts each program inside kidbox/basic or kidbox/logo, so files the kid
-# saves land there, next to nothing they can break.
+# BASIC + Logo starters: safe to overwrite (they're templates). Files the kid
+# saves land in kidbox/basic or kidbox/logo, next to nothing they can break:
+# the menu starts BASIC in kidbox/basic, and welcome.lg points Logo's SETPREFIX
+# at kidbox/logo.
 install -m 0644 "$REPO_ROOT/content/basic/HELLO.BAS" "$KIDBOX_DIR/presets/HELLO.BAS"
 install -m 0644 "$REPO_ROOT/content/logo/welcome.lg" "$KIDBOX_DIR/presets/welcome.lg"
 rm -f "$KIDBOX_DIR/basic/HELLO.BAS" "$KIDBOX_DIR/logo/welcome.lg"
