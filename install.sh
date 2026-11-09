@@ -164,27 +164,29 @@ rm -f "$KIDBOX_DIR/basic/HELLO.BAS" "$KIDBOX_DIR/logo/welcome.lg"
 # installed is left alone, so high scores and saved stories survive a
 # reinstall; delete its folder under kidbox/dos to take a fresh copy.
 #
-# The links are download-site links, not permanent archive ones, and may stop
-# working. A failed download is a warning, not a failed install. To install
-# by hand instead, unzip the game into content/dos/<folder>/ (flattened, so
-# the program is at the top); a folder there is used in place of the
-# download. The menu shows a game only once its folder is installed.
+# The links are Internet Archive items (archive.org/details/<item>), which
+# are meant to be permanent, but a failed download is still only a warning,
+# not a failed install. To install by hand instead (from a USB drive, say),
+# put the game in content/dos as either
+#   content/dos/<folder>/      the files, with the program at the top, or
+#   content/dos/<folder>.zip   the zip, unzipped (flattened) into the above
+# and either is used in place of the download, with no checksum check. Both
+# are kept out of git. The menu shows a game only once it is installed.
 DOS_GAMES=(
-  "oregon-trail|https://d2.xp.myabandonware.com/t/8ebbc881-a7ec-4cfa-8fb4-17ce3e5629bb/The-Oregon-Trail_DOS_EN.zip|e7dffa207408cf75c336f9f4a011fd328aa304c062fc1981f6f897e3a726225d"
-  "adventures-in-math|https://d2.xp.myabandonware.com/t/72f17929-4191-494d-8968-540ffd22bfa0/Adventures-in-Math_DOS_EN.zip|7034e94c306b60938d813011cbd593e70f502cff1b758fa03baa30848e9f930b"
+  # Taken from a school's network install: CONFIG.CLS and HMS306.ITM belong
+  # to that, and the game does not use them.
+  "oregon-trail|https://archive.org/download/msdos_Oregon_Trail_The_1990/Oregon_Trail_The_1990.zip|516a215af2023b771587bbd425d620e6be8d208cf5ea1651ffab36adf1a9774b"
+  "adventures-in-math|https://archive.org/download/msdos_Adventures_in_Math_1983/Adventures_in_Math_1983.zip|232981feb8e0b87a2154a1327636254bcc75d0ff19fab594c42dcc997182f5d9"
 )
 
-# Download, verify and unzip one game into place. The work happens in a
-# hidden folder next to the destination, so a failure part-way never leaves a
-# half-installed game for the menu to show.
-# Usage: fetch_dos_game <dest> <url> <sha256>
-fetch_dos_game() {
-  local dest="$1" url="$2" sha="$3" tmp
-  tmp="$(mktemp -d "$(dirname "$dest")/.download.XXXXXX")"
-  if curl -fsSL --retry 2 -A "kidbox-install" -o "$tmp/game.zip" "$url" \
-      && echo "$sha  $tmp/game.zip" | sha256sum -c --quiet - \
-      && mkdir "$tmp/files" \
-      && unzip -q -j "$tmp/game.zip" -d "$tmp/files"; then
+# Unzip a game into a new folder, flattening any folders inside the zip so
+# the program is at the top. The work happens in a hidden folder next to the
+# destination, so a failure part-way never leaves a half-made game folder.
+# Usage: unzip_dos_game <zip> <dest>
+unzip_dos_game() {
+  local zip="$1" dest="$2" tmp
+  tmp="$(mktemp -d "$(dirname "$dest")/.unzip.XXXXXX")"
+  if unzip -q -j "$zip" -d "$tmp/files"; then
     mv "$tmp/files" "$dest"
     rm -rf "$tmp"
     return 0
@@ -193,16 +195,40 @@ fetch_dos_game() {
   return 1
 }
 
+# Download a game, check it against its SHA-256 and unzip it into place.
+# Usage: fetch_dos_game <dest> <url> <sha256>
+fetch_dos_game() {
+  local dest="$1" url="$2" sha="$3" tmp status=1
+  tmp="$(mktemp -d "$(dirname "$dest")/.download.XXXXXX")"
+  if curl -fsSL --retry 2 -A "kidbox-install" -o "$tmp/game.zip" "$url" \
+      && echo "$sha  $tmp/game.zip" | sha256sum -c --quiet - \
+      && unzip_dos_game "$tmp/game.zip" "$dest"; then
+    status=0
+  fi
+  rm -rf "$tmp"
+  return $status
+}
+
 install -m 0644 "$REPO_ROOT/config/dosbox.conf" "$KIDBOX_DIR/presets/dosbox.conf"
 install -d -m 0755 "$KIDBOX_DIR/dos"
 for entry in "${DOS_GAMES[@]}"; do
   IFS='|' read -r folder url sha <<< "$entry"
   dest="$KIDBOX_DIR/dos/$folder"
+  local_dir="$REPO_ROOT/content/dos/$folder"
   if [[ -d "$dest" ]]; then
     echo "[kidbox]   $folder: already installed, keeping it"
-  elif [[ -d "$REPO_ROOT/content/dos/$folder" ]]; then
+    continue
+  fi
+
+  if [[ ! -d "$local_dir" && -f "$local_dir.zip" ]]; then
+    echo "[kidbox]   $folder: unzipping content/dos/$folder.zip"
+    unzip_dos_game "$local_dir.zip" "$local_dir" \
+      || echo "[kidbox]   WARNING: could not unzip $folder.zip" >&2
+  fi
+
+  if [[ -d "$local_dir" ]]; then
     echo "[kidbox]   $folder: copying from content/dos"
-    cp -r "$REPO_ROOT/content/dos/$folder" "$dest"
+    cp -r "$local_dir" "$dest"
   elif fetch_dos_game "$dest" "$url" "$sha"; then
     echo "[kidbox]   $folder: downloaded"
   else

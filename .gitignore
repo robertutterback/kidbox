@@ -4,3 +4,4 @@ doc/*.out
 doc/*.toc
 # DOS game files: not ours to publish. See install.sh.
 content/dos/*/
+content/dos/*.zip

@@ -310,10 +310,12 @@ The game files are not in this repo, which is public. `install.sh` downloads
 each one (`DOS_GAMES` there: folder, URL, SHA-256), checks it against the
 checksum and unzips it into `~/kidbox/dos/<folder>/`. A game that is already
 installed is left alone, so high scores survive a reinstall; delete its folder
-to take a fresh copy. The links are download-site links that may stop
-working, so a failed download only warns. To install a game by hand instead,
-unzip it into `content/dos/<folder>/` (ignored by git), which is used in place
-of the download. A game shows in the menu only once its folder is installed,
+to take a fresh copy. The links are Internet Archive items; if one ever goes
+away, a failed download only warns. To install a game by hand instead (from
+a USB drive, say), put it in `content/dos/` as either `<folder>/` (the files,
+program at the top) or `<folder>.zip`, which is unzipped into `<folder>/`.
+Either is used in place of the download, with no checksum check, and both are
+ignored by git. A game shows in the menu only once its folder is installed,
 and the Games item only once there is at least one game.
 
 | Game                           | Folder               | Command         |
