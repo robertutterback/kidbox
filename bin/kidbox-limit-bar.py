@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Daily screen-time countdown bar, and the thing that ends the session.
 
-Usage: kidbox-limit-bar.py <budget-seconds> <used-seconds>
+Usage: kidbox-limit-bar.py <budget-seconds> <used-seconds> <state-file>
 
 Started from .xinitrc when menu.sh has decided the chosen item counts
-against the daily limit (the policy -- minutes per day and which items --
-is the "Daily screen-time limit" block in menu.sh). Draws a slim strip
+against a daily limit (the policy -- the pools, their minutes per day and
+which items -- is the "Daily screen-time limits" block in menu.sh). The
+state file is the chosen item's pool's. Draws a slim strip
 along the bottom of the screen showing the time left today: whole minutes
 until the last two, then a seconds countdown in red. At zero it says so,
 waits a moment, and ends the X session the way Ctrl+Alt+Backspace does,
@@ -31,7 +32,7 @@ import sys
 import time
 import tkinter as tk
 
-STATE = os.path.expanduser("~/.kidbox-state/screen-time")
+STATE = None  # set from the command line in main()
 HEIGHT = 32
 SHOW_SECONDS_BELOW = 120  # whole minutes above this, M:SS below
 WRITE_EVERY = 10
@@ -63,9 +64,12 @@ def wait_for_matchbox(timeout=10):
 
 
 def main():
-  if len(sys.argv) != 3:
-    sys.exit("usage: kidbox-limit-bar.py <budget-seconds> <used-seconds>")
+  global STATE
+  if len(sys.argv) != 4 or not sys.argv[3]:
+    sys.exit("usage: kidbox-limit-bar.py <budget-seconds> <used-seconds>"
+             " <state-file>")
   budget, used0 = int(sys.argv[1]), int(sys.argv[2])
+  STATE = sys.argv[3]
   wait_for_matchbox()
 
   root = tk.Tk()

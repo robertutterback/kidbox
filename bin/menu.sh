@@ -41,43 +41,77 @@ SITE_SCRIPT="$HOME/bin/site.sh"
 SITES_CONF="${KIDBOX_SITES_CONF:-/etc/kidbox/sites.conf}"
 
 # -----------------------------------------------------------------------------
-# Daily screen-time limit
+# Daily screen-time limits
 #
-# Minutes per day, shared by every item named in LIMITED_NAMES (menu names,
-# exactly as they appear in MENU_ITEMS below or in sites.conf). The menu
-# refuses to start a limited item once the day's budget is spent, and
+# Two separate budgets ("pools"), each with its own minutes and state file, so
+# time spent in one never uses up the other:
+#   ixl    the items named in IXL_NAMES (menu names, exactly as they appear in
+#          MENU_ITEMS below or in sites.conf)
+#   games  every game in the Games submenu, except those named in
+#          GAMES_EXEMPT. A new game is limited unless it is listed there.
+#
+# The menu refuses to start a limited item once its pool is spent, and
 # kidbox-limit-bar.py -- started from .xinitrc when it sees KID_LIMIT_BUDGET --
 # shows the countdown along the bottom of the screen and ends the session at
-# zero. The bar is the only thing that writes the state file, every few
+# zero. The bar is the only thing that writes a pool's state file, every few
 # seconds, so a reboot loses at most that much.
 #
-# The state file holds "YYYY-MM-DD seconds-used". A file from any other day
+# A state file holds "YYYY-MM-DD seconds-used". A file from any other day
 # counts as zero, which is the whole daily reset; a session that runs past
 # midnight is charged to the day it started.
 # -----------------------------------------------------------------------------
-LIMIT_WEEKDAY_MIN=20
-LIMIT_WEEKEND_MIN=60
-LIMITED_NAMES=(
+declare -A POOL_WEEKDAY_MIN=( [ixl]=20 [games]=30 )
+declare -A POOL_WEEKEND_MIN=( [ixl]=60 [games]=60 )
+declare -A POOL_STATE=(
+  [ixl]="$HOME/.kidbox-state/screen-time"
+  [games]="$HOME/.kidbox-state/screen-time-games"
+)
+IXL_NAMES=(
   "IXL (School Practice)"
 )
-LIMIT_STATE="$HOME/.kidbox-state/screen-time"
+GAMES_EXEMPT=(
+  "Adventures in Math"
+)
 
+# Usage: limit_budget_secs <pool>
 limit_budget_secs() {
   if (( $(date +%u) >= 6 )); then
-    echo $(( LIMIT_WEEKEND_MIN * 60 ))
+    echo $(( POOL_WEEKEND_MIN[$1] * 60 ))
   else
-    echo $(( LIMIT_WEEKDAY_MIN * 60 ))
+    echo $(( POOL_WEEKDAY_MIN[$1] * 60 ))
   fi
 }
 
+# Usage: limit_used_secs <pool>
 limit_used_secs() {
-  local day used
+  local state="${POOL_STATE[$1]}" day used
   # read fails at EOF on a line with no newline, but still fills the vars.
-  if [[ -r "$LIMIT_STATE" ]] && { read -r day used _ < "$LIMIT_STATE" || true; } \
+  if [[ -r "$state" ]] && { read -r day used _ < "$state" || true; } \
       && [[ "${day:-}" == "$(date +%F)" && "${used:-}" =~ ^[0-9]+$ ]]; then
     echo "$used"
   else
     echo 0
+  fi
+}
+
+# Minutes left in a pool today, rounded up; 0 once it is spent.
+# Usage: limit_left_min <pool>
+limit_left_min() {
+  local left=$(( $(limit_budget_secs "$1") - $(limit_used_secs "$1") ))
+  (( left > 0 )) || left=0
+  echo $(( (left + 59) / 60 ))
+}
+
+# What a limited item's menu label ends with, so running out is never a
+# surprise.
+# Usage: limit_label <pool>
+limit_label() {
+  local left
+  left=$(limit_left_min "$1")
+  if (( left > 0 )); then
+    echo "  ($left min left today)"
+  else
+    echo "  (all done for today)"
   fi
 }
 
@@ -109,19 +143,19 @@ run_x() {
   echo "[$timestamp] Finished: $KID_APP" >> "$LOGFILE"
 }
 
-# Start the chosen menu item, enforcing the daily limit if it is a limited
-# one. Reads the tag from $CHOICE so the case below reads the same for every
-# item.
-# Usage: launch <program> [args...]
-launch() {
-  if [[ -z "${LIMITED_TAG[$CHOICE]:-}" ]]; then
+# Start a program, charging it to a time pool unless the pool is empty.
+# Usage: launch_in <pool-or-empty> <program> [args...]
+launch_in() {
+  local pool="$1"
+  shift
+  if [[ -z "$pool" ]]; then
     run_x "$@"
     return
   fi
 
   local budget used
-  budget=$(limit_budget_secs)
-  used=$(limit_used_secs)
+  budget=$(limit_budget_secs "$pool")
+  used=$(limit_used_secs "$pool")
   if (( used >= budget )); then
     whiptail --title "$MENU_TITLE" --msgbox \
       $'All done with that for today!\n\nIt will be back tomorrow.' 10 50
@@ -130,7 +164,86 @@ launch() {
 
   # .xinitrc starts the countdown bar when it sees these. Set for this one
   # call only.
-  KID_LIMIT_BUDGET="$budget" KID_LIMIT_USED="$used" run_x "$@"
+  KID_LIMIT_BUDGET="$budget" KID_LIMIT_USED="$used" \
+    KID_LIMIT_STATE="${POOL_STATE[$pool]}" run_x "$@"
+}
+
+# Start the chosen main-menu item, enforcing its pool if it has one. Reads the
+# tag from $CHOICE so the case below reads the same for every item.
+# Usage: launch <program> [args...]
+launch() {
+  launch_in "${LIMITED_TAG[$CHOICE]:-}" "$@"
+}
+
+# -----------------------------------------------------------------------------
+# Games (DOS programs, run in DOSBox by dos.sh)
+#
+# One line per game: menu name | folder under $DOS_DIR | DOS command to run.
+# A game appears only once install.sh has put its folder in place (the files
+# come from content/dos/<folder>/, which is kept out of git), and the Games
+# item appears only once there is at least one game.
+# -----------------------------------------------------------------------------
+DOS_SCRIPT="$HOME/bin/dos.sh"
+DOS_DIR="$KIDBOX_DIR/dos"
+GAMES=(
+  # VGA is named because the game's own README says its graphics detection
+  # can fail.
+  "The Oregon Trail|oregon-trail|OREGON VGA"
+  # The game ships its own BASICA.EXE: COMPAQ BASIC 1.13, which, unlike
+  # IBM's BASICA, does not need BASIC in ROM, so it runs in DOSBox.
+  "Adventures in Math|adventures-in-math|BASICA CASTLE"
+)
+
+# The pool a game is charged to: empty if exempt, "games" otherwise.
+# Usage: game_pool <menu-name>
+game_pool() {
+  local name
+  for name in "${GAMES_EXEMPT[@]}"; do
+    [[ "$name" == "$1" ]] && return 0
+  done
+  echo games
+}
+
+# Installed games, one "name|folder|command" line each.
+installed_games() {
+  local line name dir cmd
+  for line in "${GAMES[@]}"; do
+    IFS='|' read -r name dir cmd <<< "$line"
+    [[ -d "$DOS_DIR/$dir" ]] && printf '%s\n' "$line"
+  done
+  return 0
+}
+
+games_menu() {
+  local -a games items
+  local i choice name dir cmd pool label
+  mapfile -t games < <(installed_games)
+
+  while true; do
+    items=()
+    for i in "${!games[@]}"; do
+      IFS='|' read -r name dir cmd <<< "${games[i]}"
+      label="$name"
+      pool=$(game_pool "$name")
+      [[ -n "$pool" ]] && label+=$(limit_label "$pool")
+      items+=( "$(( i + 1 ))" "$label" )
+    done
+    items+=( "0" "Back to the main menu" )
+
+    choice=$(
+      whiptail --title "$MENU_TITLE" --nocancel \
+        --menu "Choose a game" "$TERM_LINES" "$TERM_COLS" "$MENU_ROWS" \
+          "${items[@]}" \
+        3>&1 1>&2 2>&3
+    ) || return 0
+    [[ "$choice" == 0 ]] && return 0
+
+    IFS='|' read -r name dir cmd <<< "${games[choice - 1]}"
+    # cmd is left unquoted on purpose: "BASICA CASTLE" goes in as two words,
+    # and dos.sh joins them back up.
+    # shellcheck disable=SC2086
+    launch_in "$(game_pool "$name")" "$DOS_SCRIPT" "$DOS_DIR/$dir" $cmd
+  done
 }
 
 MENU_TITLE="Girls' Computer (v$VERSION)"
@@ -147,16 +260,24 @@ MENU_ITEMS=(
   10 "Look Up a Word"
 )
 
+# Games, if any are installed, take the next number after the activities.
+GAMES_TAG=""
+site_tag=11
+if [[ -n "$(installed_games)" ]]; then
+  GAMES_TAG=$site_tag
+  MENU_ITEMS+=( "$GAMES_TAG" "Games" )
+  site_tag=$(( site_tag + 1 ))
+fi
+
 # Website items come from $SITES_CONF, read fresh every time the menu is drawn,
 # so the menu shows a new site as soon as install.sh has written the file. The
 # browser allowlist is generated from the same file by kidbox-gen-policy.py.
 #
-# Numbering runs straight on from the activities above: websites take 11, 12,
-# 13... and Shutdown takes whatever number comes next. No gaps, no reserved
-# numbers.
+# Numbering runs straight on from the activities above (and Games, if it is
+# there): websites take the next numbers, and Shutdown takes whatever number
+# comes after them. No gaps, no reserved numbers.
 declare -A SITE_URL=()
 declare -A SITE_SLUG=()
-site_tag=11
 
 if [[ -r "$SITES_CONF" ]]; then
   while IFS='|' read -r kind name url _rest; do
@@ -177,13 +298,14 @@ fi
 SHUTDOWN_TAG=$site_tag
 MENU_ITEMS+=( "$SHUTDOWN_TAG" "Shutdown Computer" )
 
-# Tags of the limited items, looked up by name so a site can be limited
-# without knowing which number it landed on.
+# Pool of each limited main-menu item, looked up by name so a site can be
+# limited without knowing which number it landed on. Games are not in here:
+# the Games submenu charges each game itself.
 declare -A LIMITED_TAG=()
 for (( i = 0; i < ${#MENU_ITEMS[@]}; i += 2 )); do
-  for name in "${LIMITED_NAMES[@]}"; do
+  for name in "${IXL_NAMES[@]}"; do
     if [[ "${MENU_ITEMS[i+1]}" == "$name" ]]; then
-      LIMITED_TAG[${MENU_ITEMS[i]}]=1
+      LIMITED_TAG[${MENU_ITEMS[i]}]=ixl
     fi
   done
 done
@@ -222,17 +344,20 @@ while true; do
   MENU_ROWS=$(( TERM_LINES - 8 ))
 
   # Limited items say what is left today, so running out is never a surprise.
-  budget=$(limit_budget_secs)
-  used=$(limit_used_secs)
   ITEMS=()
   for (( i = 0; i < ${#MENU_ITEMS[@]}; i += 2 )); do
     tag="${MENU_ITEMS[i]}"
     name="${MENU_ITEMS[i+1]}"
     if [[ -n "${LIMITED_TAG[$tag]:-}" ]]; then
-      if (( used < budget )); then
-        name+="  ($(( (budget - used + 59) / 60 )) min left today)"
+      name+=$(limit_label "${LIMITED_TAG[$tag]}")
+    elif [[ "$tag" == "$GAMES_TAG" ]]; then
+      # Exempt games are still playable once game time is spent, so this
+      # does not say "all done".
+      left=$(limit_left_min games)
+      if (( left > 0 )); then
+        name+="  ($left min of game time left)"
       else
-        name+="  (all done for today)"
+        name+="  (game time used up)"
       fi
     fi
     ITEMS+=( "$tag" "$name" )
@@ -265,9 +390,11 @@ while true; do
     "$SHUTDOWN_TAG") sudo shutdown -h now ;;
     0) exit 0 ;;
     *)
-      # Website tags are assigned above, so look the choice up instead of
-      # hard-coding a case per site.
-      if [[ -n "${SITE_URL[$CHOICE]:-}" ]]; then
+      # Games and website tags are assigned above, so look the choice up
+      # instead of hard-coding a case for each.
+      if [[ "$CHOICE" == "$GAMES_TAG" ]]; then
+        games_menu
+      elif [[ -n "${SITE_URL[$CHOICE]:-}" ]]; then
         launch "$SITE_SCRIPT" "${SITE_URL[$CHOICE]}" "${SITE_SLUG[$CHOICE]}"
       fi
       ;;

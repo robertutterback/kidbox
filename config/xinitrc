@@ -30,9 +30,11 @@ xbindkeys &
 
 # Daily screen-time limit (see menu.sh, which sets these for a limited item).
 # The bar is a matchbox toolbar, so the app is sized to leave room for it,
-# and it ends the session when the time is up.
+# and it ends the session when the time is up. KID_LIMIT_STATE says which
+# pool's file the time is charged to.
 if [ -n "${KID_LIMIT_BUDGET:-}" ]; then
-  "$HOME/bin/kidbox-limit-bar.py" "$KID_LIMIT_BUDGET" "${KID_LIMIT_USED:-0}" &
+  "$HOME/bin/kidbox-limit-bar.py" "$KID_LIMIT_BUDGET" "${KID_LIMIT_USED:-0}" \
+    "${KID_LIMIT_STATE:-}" &
 fi
 
 # Run selected app (from run-x.sh)

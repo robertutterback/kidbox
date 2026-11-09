@@ -262,12 +262,19 @@ own user** (that URL is blocked for the kid user).
 
 ## Screen-Time Limit
 
-Some menu items count against a daily time budget: 20 minutes on weekdays,
-60 at the weekend, shared across all of them. Right now that is only IXL.
-The numbers and the list live in the "Daily screen-time limit" block of
-`bin/menu.sh` (`LIMIT_WEEKDAY_MIN`, `LIMIT_WEEKEND_MIN`, `LIMITED_NAMES`).
-Items are named by their menu label, so a website from `sites.conf` and a
-built-in like Tux Paint are added the same way.
+Some menu items count against a daily time budget. There are two separate
+budgets ("pools"), and time in one never uses up the other:
+
+- **ixl**: 20 minutes on weekdays, 60 at the weekend. Items are listed by
+  menu label in `IXL_NAMES`, so a website from `sites.conf` and a built-in
+  like Tux Paint are added the same way. Right now that is only IXL.
+- **games**: 30 minutes on weekdays, 60 at the weekend, shared by every game
+  in the Games submenu except those listed in `GAMES_EXEMPT` (now just
+  Adventures in Math). A new game is limited unless it is exempted.
+
+The numbers and lists live in the "Daily screen-time limits" block of
+`bin/menu.sh` (`POOL_WEEKDAY_MIN`, `POOL_WEEKEND_MIN`, `IXL_NAMES`,
+`GAMES_EXEMPT`).
 
 While a limited item is running, a slim bar along the bottom of the screen
 shows the time left today: whole minutes until the last two, then a seconds
@@ -275,9 +282,11 @@ countdown in red. At zero it says so and ends the session, and the menu item
 reads "(all done for today)" until tomorrow; picking it anyway gets a message,
 not a launch.
 
-How it works: `menu.sh` reads `~/.kidbox-state/screen-time`
-(`YYYY-MM-DD seconds-used`), treats a file from another day as zero (that is
-the daily reset), and passes the budget and used time into the X session.
+How it works: each pool has a state file, `~/.kidbox-state/screen-time` for
+ixl and `~/.kidbox-state/screen-time-games` for games
+(`YYYY-MM-DD seconds-used`). `menu.sh` treats a file from another day as zero
+(that is the daily reset), and passes the budget, used time and state file
+into the X session.
 `.xinitrc` starts `kidbox-limit-bar.py`, a matchbox *toolbar* window, so the
 app is resized to leave room rather than being overlapped -- a dock would be
 ignored for a fullscreen client like Chromium's kiosk mode. The bar is the only
@@ -285,10 +294,41 @@ writer of the state file (every 10 seconds and on exit), so a reboot or a quit
 loses at most 10 seconds of used time. It ends the session the same way
 Ctrl+Alt+Backspace does (`pkill -TERM Xorg`).
 
-To grant extra time today, delete the state file:
+To grant extra time today, delete that pool's state file:
 ```bash
-sudo rm /home/<kiduser>/.kidbox-state/screen-time
+sudo rm /home/<kiduser>/.kidbox-state/screen-time         # IXL
+sudo rm /home/<kiduser>/.kidbox-state/screen-time-games   # games
 ```
+
+## Games
+
+The Games item opens a submenu of DOS games, run in DOSBox by `bin/dos.sh`.
+The list is `GAMES` in `bin/menu.sh`: menu name, folder, and the DOS command
+that starts the game. Quitting the game quits DOSBox and returns to the menu.
+
+The game files are not in this repo, which is public. `install.sh` downloads
+each one (`DOS_GAMES` there: folder, URL, SHA-256), checks it against the
+checksum and unzips it into `~/kidbox/dos/<folder>/`. A game that is already
+installed is left alone, so high scores survive a reinstall; delete its folder
+to take a fresh copy. The links are download-site links that may stop
+working, so a failed download only warns. To install a game by hand instead,
+unzip it into `content/dos/<folder>/` (ignored by git), which is used in place
+of the download. A game shows in the menu only once its folder is installed,
+and the Games item only once there is at least one game.
+
+| Game                           | Folder               | Command         |
+|--------------------------------|----------------------|-----------------|
+| The Oregon Trail (1990, MECC)  | `oregon-trail`       | `OREGON VGA`    |
+| Adventures in Math (1983, IBM) | `adventures-in-math` | `BASICA CASTLE` |
+
+Each folder holds the game's files unzipped, with any subfolder flattened so
+the program is at the top. Adventures in Math is a BASICA program, and IBM's
+BASICA needs the BASIC in an IBM PC's ROM, which DOSBox does not have. The
+copy used here ships with `BASICA.EXE` from COMPAQ BASIC 1.13, which does not
+need it.
+
+DOSBox settings are in `config/dosbox.conf`. Fullscreen there is untested
+against the screen-time bar; see the comment in that file.
 
 ## Power Button Behavior
 

@@ -68,6 +68,9 @@ APT_PACKAGES=(
   python3-evdev
   python3-tk
   xdotool
+  dosbox
+  curl
+  unzip
 )
 
 echo "[kidbox] Installing packages..."
@@ -152,6 +155,61 @@ done
 install -m 0644 "$REPO_ROOT/content/basic/HELLO.BAS" "$KIDBOX_DIR/presets/HELLO.BAS"
 install -m 0644 "$REPO_ROOT/content/logo/welcome.lg" "$KIDBOX_DIR/presets/welcome.lg"
 rm -f "$KIDBOX_DIR/basic/HELLO.BAS" "$KIDBOX_DIR/logo/welcome.lg"
+
+# DOS games. Settings are a preset (root-owned, like the starters above).
+#
+# The game files are not in git: the repo is public and they are not ours to
+# publish. Each game is fetched from the URL below and checked against its
+# SHA-256, so the box gets exactly the files that were tested. A game already
+# installed is left alone, so high scores and saved stories survive a
+# reinstall; delete its folder under kidbox/dos to take a fresh copy.
+#
+# The links are download-site links, not permanent archive ones, and may stop
+# working. A failed download is a warning, not a failed install. To install
+# by hand instead, unzip the game into content/dos/<folder>/ (flattened, so
+# the program is at the top); a folder there is used in place of the
+# download. The menu shows a game only once its folder is installed.
+DOS_GAMES=(
+  "oregon-trail|https://d2.xp.myabandonware.com/t/8ebbc881-a7ec-4cfa-8fb4-17ce3e5629bb/The-Oregon-Trail_DOS_EN.zip|e7dffa207408cf75c336f9f4a011fd328aa304c062fc1981f6f897e3a726225d"
+  "adventures-in-math|https://d2.xp.myabandonware.com/t/72f17929-4191-494d-8968-540ffd22bfa0/Adventures-in-Math_DOS_EN.zip|7034e94c306b60938d813011cbd593e70f502cff1b758fa03baa30848e9f930b"
+)
+
+# Download, verify and unzip one game into place. The work happens in a
+# hidden folder next to the destination, so a failure part-way never leaves a
+# half-installed game for the menu to show.
+# Usage: fetch_dos_game <dest> <url> <sha256>
+fetch_dos_game() {
+  local dest="$1" url="$2" sha="$3" tmp
+  tmp="$(mktemp -d "$(dirname "$dest")/.download.XXXXXX")"
+  if curl -fsSL --retry 2 -A "kidbox-install" -o "$tmp/game.zip" "$url" \
+      && echo "$sha  $tmp/game.zip" | sha256sum -c --quiet - \
+      && mkdir "$tmp/files" \
+      && unzip -q -j "$tmp/game.zip" -d "$tmp/files"; then
+    mv "$tmp/files" "$dest"
+    rm -rf "$tmp"
+    return 0
+  fi
+  rm -rf "$tmp"
+  return 1
+}
+
+install -m 0644 "$REPO_ROOT/config/dosbox.conf" "$KIDBOX_DIR/presets/dosbox.conf"
+install -d -m 0755 "$KIDBOX_DIR/dos"
+for entry in "${DOS_GAMES[@]}"; do
+  IFS='|' read -r folder url sha <<< "$entry"
+  dest="$KIDBOX_DIR/dos/$folder"
+  if [[ -d "$dest" ]]; then
+    echo "[kidbox]   $folder: already installed, keeping it"
+  elif [[ -d "$REPO_ROOT/content/dos/$folder" ]]; then
+    echo "[kidbox]   $folder: copying from content/dos"
+    cp -r "$REPO_ROOT/content/dos/$folder" "$dest"
+  elif fetch_dos_game "$dest" "$url" "$sha"; then
+    echo "[kidbox]   $folder: downloaded"
+  else
+    echo "[kidbox]   WARNING: could not download or verify $folder; it will" >&2
+    echo "[kidbox]   not be in the menu. See the DOS games notes in install.sh." >&2
+  fi
+done
 
 # Book PDF: copy if exists
 if [[ -f "$REPO_ROOT/doc/kidbook.pdf" ]]; then
