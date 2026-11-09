@@ -404,8 +404,10 @@ while true; do
       # Storybook, Games and website tags are assigned above, so look the
       # choice up instead of hard-coding a case for each.
       if [[ "$CHOICE" == "$STORYBOOK_TAG" ]]; then
-        # VGA is named because the README says detection can fail.
-        launch "$DOS_SCRIPT" "$STORYBOOK_DIR" SBW VGA
+        # No "VGA" argument, though the README suggests it when detection
+        # fails: with it, SBW asked for graphics and sound settings on every
+        # launch instead of using SBW.CFG.
+        launch "$DOS_SCRIPT" "$STORYBOOK_DIR" SBW
       elif [[ "$CHOICE" == "$GAMES_TAG" ]]; then
         games_menu
       elif [[ -n "${SITE_URL[$CHOICE]:-}" ]]; then

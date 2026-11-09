@@ -48,7 +48,10 @@ focus_dosbox() {
   xdotool windowfocus "$win" 2>/dev/null || true
 }
 
-SDL_VIDEO_X11_WMCLASS="$WM_CLASS" dosbox \
+# SDL_VIDEO_X11_DGAMOUSE=0: in fullscreen, SDL 1.2 reads the mouse through
+# the XFree86-DGA extension, which on the Pi made Storybook Weaver's pointer
+# drift and jump on its own. Plain X mouse events behave.
+SDL_VIDEO_X11_DGAMOUSE=0 SDL_VIDEO_X11_WMCLASS="$WM_CLASS" dosbox \
   -conf "$HOME/kidbox/presets/dosbox.conf" \
   -c "mount c \"$dir\"" \
   -c "c:" \

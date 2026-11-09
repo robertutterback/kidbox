@@ -325,7 +325,7 @@ is installed, and the Games item only once there is at least one game.
 |----------------------------------|----------------------|-----------------|
 | The Oregon Trail (1990, MECC)    | `oregon-trail`       | `OREGON VGA`    |
 | Adventures in Math (1983, IBM)   | `adventures-in-math` | `BASICA CASTLE` |
-| Storybook Weaver (1992, MECC)    | `storybook-weaver`   | `SBW VGA`       |
+| Storybook Weaver (1992, MECC)    | `storybook-weaver`   | `SBW`           |
 
 Ctrl+Alt+Backspace quits a DOS program and returns to the menu, as it does
 everywhere else. DOSBox grabs the keyboard, so the usual xbindkeys binding
