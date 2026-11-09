@@ -35,7 +35,15 @@ focus_dosbox() {
   win="$(timeout 15 xdotool search --sync --onlyvisible --class "$WM_CLASS" \
            2>/dev/null | head -n1)" || return 0
   [[ -n "$win" ]] || return 0
-  # SDL may still be setting the window up when it first appears.
+  # In a limited session the time-left bar (kidbox-limit-bar.py, started by
+  # .xinitrc) appears a second or so after DOSBox and takes the focus with
+  # it, so focusing DOSBox before then does not stick. Wait for the bar.
+  if [[ -n "${KID_LIMIT_BUDGET:-}" ]]; then
+    timeout 15 xdotool search --sync --onlyvisible --name '^kidbox-limit-bar$' \
+      >/dev/null 2>&1 || true
+  fi
+  # SDL may still be setting the window up when it first appears, and the
+  # bar may still be settling.
   sleep 0.5
   xdotool windowfocus "$win" 2>/dev/null || true
 }
