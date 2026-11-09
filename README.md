@@ -300,31 +300,38 @@ sudo rm /home/<kiduser>/.kidbox-state/screen-time         # IXL
 sudo rm /home/<kiduser>/.kidbox-state/screen-time-games   # games
 ```
 
-## Games
+## Games and Storybook Weaver
 
-The Games item opens a submenu of DOS games, run in DOSBox by `bin/dos.sh`.
-The list is `GAMES` in `bin/menu.sh`: menu name, folder, and the DOS command
-that starts the game. Quitting the game quits DOSBox and returns to the menu.
+The Games item opens a submenu of DOS games. Storybook Weaver is a DOS
+program too, but not a game, so it is on the main menu with no time limit.
+All of them run in DOSBox via `bin/dos.sh`, and quitting the program quits
+DOSBox and returns to the menu. The games list is `GAMES` in `bin/menu.sh`:
+menu name, folder, and the DOS command that starts the game.
 
-The game files are not in this repo, which is public. `install.sh` downloads
-each one (`DOS_GAMES` there: folder, URL, SHA-256), checks it against the
-checksum and unzips it into `~/kidbox/dos/<folder>/`. A game that is already
-installed is left alone, so high scores survive a reinstall; delete its folder
-to take a fresh copy. The links are Internet Archive items; if one ever goes
-away, a failed download only warns. To install a game by hand instead (from
-a USB drive, say), put it in `content/dos/` as either `<folder>/` (the files,
-program at the top) or `<folder>.zip`, which is unzipped into `<folder>/`.
-Either is used in place of the download, with no checksum check, and both are
-ignored by git. A game shows in the menu only once its folder is installed,
-and the Games item only once there is at least one game.
+The program files are not in this repo, which is public. `install.sh`
+downloads each one (`DOS_GAMES` there: folder, URL, SHA-256, and optionally
+the folder inside the zip to install), checks it against the checksum and
+unzips it into `~/kidbox/dos/<folder>/`. A program that is already installed
+is left alone, so high scores and saved stories survive a reinstall; delete
+its folder to take a fresh copy. The links are Internet Archive items; if one
+ever goes away, a failed download only warns. To install one by hand instead
+(from a USB drive, say), put it in `content/dos/` as either `<folder>/` (the
+files, program at the top) or `<folder>.zip`, which is unzipped into
+`<folder>/`. Either is used in place of the download, with no checksum check,
+and both are ignored by git. A program shows in the menu only once its folder
+is installed, and the Games item only once there is at least one game.
 
-| Game                           | Folder               | Command         |
-|--------------------------------|----------------------|-----------------|
-| The Oregon Trail (1990, MECC)  | `oregon-trail`       | `OREGON VGA`    |
-| Adventures in Math (1983, IBM) | `adventures-in-math` | `BASICA CASTLE` |
+| Program                          | Folder               | Command         |
+|----------------------------------|----------------------|-----------------|
+| The Oregon Trail (1990, MECC)    | `oregon-trail`       | `OREGON VGA`    |
+| Adventures in Math (1983, IBM)   | `adventures-in-math` | `BASICA CASTLE` |
+| Storybook Weaver (1992, MECC)    | `storybook-weaver`   | `SBW VGA`       |
 
-Each folder holds the game's files unzipped, with any subfolder flattened so
-the program is at the top. Adventures in Math is a BASICA program, and IBM's
+Storybook Weaver saves stories in its own folder. It cannot print: the DOSBox
+in Raspberry Pi OS has no printer support. Its "Read-Only" save to a floppy
+(A: or B:) gets an error, since no floppy drive is set up.
+
+Adventures in Math is a BASICA program, and IBM's
 BASICA needs the BASIC in an IBM PC's ROM, which DOSBox does not have. The
 copy used here ships with `BASICA.EXE` from COMPAQ BASIC 1.13, which does not
 need it.

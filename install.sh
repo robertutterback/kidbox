@@ -156,53 +156,81 @@ install -m 0644 "$REPO_ROOT/content/basic/HELLO.BAS" "$KIDBOX_DIR/presets/HELLO.
 install -m 0644 "$REPO_ROOT/content/logo/welcome.lg" "$KIDBOX_DIR/presets/welcome.lg"
 rm -f "$KIDBOX_DIR/basic/HELLO.BAS" "$KIDBOX_DIR/logo/welcome.lg"
 
-# DOS games. Settings are a preset (root-owned, like the starters above).
+# DOS programs: the games, and Storybook Weaver, which is not a game but
+# installs the same way. Settings are a preset (root-owned, like the starters
+# above).
 #
-# The game files are not in git: the repo is public and they are not ours to
-# publish. Each game is fetched from the URL below and checked against its
-# SHA-256, so the box gets exactly the files that were tested. A game already
-# installed is left alone, so high scores and saved stories survive a
+# The program files are not in git: the repo is public and they are not ours
+# to publish. Each is fetched from the URL below and checked against its
+# SHA-256, so the box gets exactly the files that were tested. A program
+# already installed is left alone, so high scores and saved stories survive a
 # reinstall; delete its folder under kidbox/dos to take a fresh copy.
 #
 # The links are Internet Archive items (archive.org/details/<item>), which
 # are meant to be permanent, but a failed download is still only a warning,
 # not a failed install. To install by hand instead (from a USB drive, say),
-# put the game in content/dos as either
+# put it in content/dos as either
 #   content/dos/<folder>/      the files, with the program at the top, or
-#   content/dos/<folder>.zip   the zip, unzipped (flattened) into the above
+#   content/dos/<folder>.zip   the zip, unzipped into the above
 # and either is used in place of the download, with no checksum check. Both
-# are kept out of git. The menu shows a game only once it is installed.
+# are kept out of git. The menu shows a program only once it is installed.
+#
+# One line each: folder | URL | SHA-256 | folder inside the zip. The last is
+# for zips holding more than the program: only that folder is installed. Left
+# empty, the installer steps down through any lone top-level folder until it
+# reaches the files.
 DOS_GAMES=(
   # Taken from a school's network install: CONFIG.CLS and HMS306.ITM belong
   # to that, and the game does not use them.
-  "oregon-trail|https://archive.org/download/msdos_Oregon_Trail_The_1990/Oregon_Trail_The_1990.zip|516a215af2023b771587bbd425d620e6be8d208cf5ea1651ffab36adf1a9774b"
-  "adventures-in-math|https://archive.org/download/msdos_Adventures_in_Math_1983/Adventures_in_Math_1983.zip|232981feb8e0b87a2154a1327636254bcc75d0ff19fab594c42dcc997182f5d9"
+  "oregon-trail|https://archive.org/download/msdos_Oregon_Trail_The_1990/Oregon_Trail_The_1990.zip|516a215af2023b771587bbd425d620e6be8d208cf5ea1651ffab36adf1a9774b|"
+  "adventures-in-math|https://archive.org/download/msdos_Adventures_in_Math_1983/Adventures_in_Math_1983.zip|232981feb8e0b87a2154a1327636254bcc75d0ff19fab594c42dcc997182f5d9|"
+  # The zip holds the original install floppies (floppy/) as well as an
+  # installed copy (SBW/), already set up for Sound Blaster. Only SBW/ is
+  # wanted, kept whole: its mt32/, sb16/ and tandy/ folders each hold an
+  # SBW.CFG that would overwrite the real one if flattened.
+  "storybook-weaver|https://archive.org/download/msdos_Storybook_Weaver_1992/Storybook_Weaver_1992.zip|74bcc61550d063aa29c3305b5d6eed986fddce330a8815f156c05058de720059|Strybook/SBW"
 )
 
-# Unzip a game into a new folder, flattening any folders inside the zip so
-# the program is at the top. The work happens in a hidden folder next to the
-# destination, so a failure part-way never leaves a half-made game folder.
-# Usage: unzip_dos_game <zip> <dest>
+# Unzip a program into a new folder. With an inner folder that exists in the
+# zip, only that is kept; otherwise any lone top-level folder is stepped
+# into, so the program ends up at the top either way. The work happens in a
+# hidden folder next to the destination, so a failure part-way never leaves a
+# half-made folder.
+# Usage: unzip_dos_game <zip> <dest> [inner-folder]
 unzip_dos_game() {
-  local zip="$1" dest="$2" tmp
+  local zip="$1" dest="$2" inner="${3:-}" tmp src
+  local -a entries
   tmp="$(mktemp -d "$(dirname "$dest")/.unzip.XXXXXX")"
-  if unzip -q -j "$zip" -d "$tmp/files"; then
-    mv "$tmp/files" "$dest"
+  if ! unzip -q "$zip" -d "$tmp/files"; then
     rm -rf "$tmp"
-    return 0
+    return 1
   fi
+
+  src="$tmp/files"
+  if [[ -n "$inner" && -d "$src/$inner" ]]; then
+    src="$src/$inner"
+  else
+    while true; do
+      entries=( "$src"/* )
+      [[ ${#entries[@]} -eq 1 && -d "${entries[0]}" ]] || break
+      src="${entries[0]}"
+    done
+  fi
+
+  local status=0
+  mv "$src" "$dest" || status=1
   rm -rf "$tmp"
-  return 1
+  return $status
 }
 
-# Download a game, check it against its SHA-256 and unzip it into place.
-# Usage: fetch_dos_game <dest> <url> <sha256>
+# Download a program, check it against its SHA-256 and unzip it into place.
+# Usage: fetch_dos_game <dest> <url> <sha256> [inner-folder]
 fetch_dos_game() {
-  local dest="$1" url="$2" sha="$3" tmp status=1
+  local dest="$1" url="$2" sha="$3" inner="${4:-}" tmp status=1
   tmp="$(mktemp -d "$(dirname "$dest")/.download.XXXXXX")"
   if curl -fsSL --retry 2 -A "kidbox-install" -o "$tmp/game.zip" "$url" \
       && echo "$sha  $tmp/game.zip" | sha256sum -c --quiet - \
-      && unzip_dos_game "$tmp/game.zip" "$dest"; then
+      && unzip_dos_game "$tmp/game.zip" "$dest" "$inner"; then
     status=0
   fi
   rm -rf "$tmp"
@@ -212,7 +240,7 @@ fetch_dos_game() {
 install -m 0644 "$REPO_ROOT/config/dosbox.conf" "$KIDBOX_DIR/presets/dosbox.conf"
 install -d -m 0755 "$KIDBOX_DIR/dos"
 for entry in "${DOS_GAMES[@]}"; do
-  IFS='|' read -r folder url sha <<< "$entry"
+  IFS='|' read -r folder url sha inner <<< "$entry"
   dest="$KIDBOX_DIR/dos/$folder"
   local_dir="$REPO_ROOT/content/dos/$folder"
   if [[ -d "$dest" ]]; then
@@ -222,14 +250,14 @@ for entry in "${DOS_GAMES[@]}"; do
 
   if [[ ! -d "$local_dir" && -f "$local_dir.zip" ]]; then
     echo "[kidbox]   $folder: unzipping content/dos/$folder.zip"
-    unzip_dos_game "$local_dir.zip" "$local_dir" \
+    unzip_dos_game "$local_dir.zip" "$local_dir" "$inner" \
       || echo "[kidbox]   WARNING: could not unzip $folder.zip" >&2
   fi
 
   if [[ -d "$local_dir" ]]; then
     echo "[kidbox]   $folder: copying from content/dos"
     cp -r "$local_dir" "$dest"
-  elif fetch_dos_game "$dest" "$url" "$sha"; then
+  elif fetch_dos_game "$dest" "$url" "$sha" "$inner"; then
     echo "[kidbox]   $folder: downloaded"
   else
     echo "[kidbox]   WARNING: could not download or verify $folder; it will" >&2

@@ -260,9 +260,20 @@ MENU_ITEMS=(
   10 "Look Up a Word"
 )
 
-# Games, if any are installed, take the next number after the activities.
-GAMES_TAG=""
+# Storybook Weaver is a DOS program like the games, but not a game: it goes
+# on the main menu, with no time limit. Like the games, it shows only once
+# install.sh has put its folder in place.
+STORYBOOK_DIR="$DOS_DIR/storybook-weaver"
+STORYBOOK_TAG=""
 site_tag=11
+if [[ -d "$STORYBOOK_DIR" ]]; then
+  STORYBOOK_TAG=$site_tag
+  MENU_ITEMS+=( "$STORYBOOK_TAG" "Storybook Weaver" )
+  site_tag=$(( site_tag + 1 ))
+fi
+
+# Games, if any are installed, take the next number.
+GAMES_TAG=""
 if [[ -n "$(installed_games)" ]]; then
   GAMES_TAG=$site_tag
   MENU_ITEMS+=( "$GAMES_TAG" "Games" )
@@ -273,8 +284,8 @@ fi
 # so the menu shows a new site as soon as install.sh has written the file. The
 # browser allowlist is generated from the same file by kidbox-gen-policy.py.
 #
-# Numbering runs straight on from the activities above (and Games, if it is
-# there): websites take the next numbers, and Shutdown takes whatever number
+# Numbering runs straight on from the activities above (and Storybook Weaver
+# and Games, if they are there): websites take the next numbers, and Shutdown takes whatever number
 # comes after them. No gaps, no reserved numbers.
 declare -A SITE_URL=()
 declare -A SITE_SLUG=()
@@ -390,9 +401,12 @@ while true; do
     "$SHUTDOWN_TAG") sudo shutdown -h now ;;
     0) exit 0 ;;
     *)
-      # Games and website tags are assigned above, so look the choice up
-      # instead of hard-coding a case for each.
-      if [[ "$CHOICE" == "$GAMES_TAG" ]]; then
+      # Storybook, Games and website tags are assigned above, so look the
+      # choice up instead of hard-coding a case for each.
+      if [[ "$CHOICE" == "$STORYBOOK_TAG" ]]; then
+        # VGA is named because the README says detection can fail.
+        launch "$DOS_SCRIPT" "$STORYBOOK_DIR" SBW VGA
+      elif [[ "$CHOICE" == "$GAMES_TAG" ]]; then
         games_menu
       elif [[ -n "${SITE_URL[$CHOICE]:-}" ]]; then
         launch "$SITE_SCRIPT" "${SITE_URL[$CHOICE]}" "${SITE_SLUG[$CHOICE]}"
