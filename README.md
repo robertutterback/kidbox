@@ -327,6 +327,18 @@ is installed, and the Games item only once there is at least one game.
 | Adventures in Math (1983, IBM)   | `adventures-in-math` | `BASICA CASTLE` |
 | Storybook Weaver (1992, MECC)    | `storybook-weaver`   | `SBW VGA`       |
 
+Ctrl+Alt+Backspace quits a DOS program and returns to the menu, as it does
+everywhere else. DOSBox grabs the keyboard, so the usual xbindkeys binding
+never sees those keys; `bin/kidbox-quit-watch.py` reads the keyboard directly
+through evdev instead (the kid user needs the `input` group, which
+`install.sh` adds) and ends DOSBox. DOSBox's own Ctrl+F9 also quits.
+`dos.sh` also gives the DOSBox window keyboard focus once it appears, since
+without that the keys did nothing until the window was clicked.
+
+The installer downloads through Cloudflare's DNS-over-HTTPS (`1.1.1.1`),
+because the family DNS filter blocks archive.org. Only the installer does
+this; everything the kids use still goes through the filter.
+
 Storybook Weaver saves stories in its own folder. It cannot print: the DOSBox
 in Raspberry Pi OS has no printer support. Its "Read-Only" save to a floppy
 (A: or B:) gets an error, since no floppy drive is set up.

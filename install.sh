@@ -23,14 +23,17 @@ if ! id -u "$KID_USER" >/dev/null 2>&1; then
   echo "[kidbox] Creating user '$KID_USER'..."
   # No password (console autologin will be enabled separately via raspi-config)
   adduser --disabled-password --gecos "" "$KID_USER"
-  
-  # Useful groups for sound/video/input devices
-  for g in audio video input plugdev render; do
-    if getent group "$g" >/dev/null 2>&1; then
-      usermod -aG "$g" "$KID_USER"
-    fi
-  done
 fi
+
+# Useful groups for sound/video/input devices. Every run, not just when the
+# user is created, so a user made some other way gets them too: "input" is
+# what lets kidbox-quit-watch.py read the keyboard. Takes effect at the next
+# login.
+for g in audio video input plugdev render; do
+  if getent group "$g" >/dev/null 2>&1; then
+    usermod -aG "$g" "$KID_USER"
+  fi
+done
 
 KID_HOME="$(getent passwd "$KID_USER" | cut -d: -f6)"
 if [[ -z "${KID_HOME}" || ! -d "${KID_HOME}" ]]; then
@@ -104,6 +107,9 @@ install -m 0755 "$REPO_ROOT/bin/dictionary-suggest.py" "$KID_BIN_DIR/dictionary-
 
 echo "[kidbox] Installing screen-time bar..."
 install -m 0755 "$REPO_ROOT/bin/kidbox-limit-bar.py" "$KID_BIN_DIR/kidbox-limit-bar.py"
+
+echo "[kidbox] Installing Ctrl+Alt+Backspace watcher for DOS programs..."
+install -m 0755 "$REPO_ROOT/bin/kidbox-quit-watch.py" "$KID_BIN_DIR/kidbox-quit-watch.py"
 
 # -------------------------------
 # Install .xinitrc
@@ -224,11 +230,18 @@ unzip_dos_game() {
 }
 
 # Download a program, check it against its SHA-256 and unzip it into place.
+#
+# Names are looked up through Cloudflare's DNS-over-HTTPS rather than the
+# box's own DNS, because the family filter set up below blocks archive.org.
+# This is the installer only, fetching pinned files: the kids' browser still
+# goes through the filter. The DoH server is given by IP, so the lookup needs
+# no DNS of its own.
 # Usage: fetch_dos_game <dest> <url> <sha256> [inner-folder]
 fetch_dos_game() {
   local dest="$1" url="$2" sha="$3" inner="${4:-}" tmp status=1
   tmp="$(mktemp -d "$(dirname "$dest")/.download.XXXXXX")"
-  if curl -fsSL --retry 2 -A "kidbox-install" -o "$tmp/game.zip" "$url" \
+  if curl -fsSL --retry 2 -A "kidbox-install" \
+      --doh-url https://1.1.1.1/dns-query -o "$tmp/game.zip" "$url" \
       && echo "$sha  $tmp/game.zip" | sha256sum -c --quiet - \
       && unzip_dos_game "$tmp/game.zip" "$dest" "$inner"; then
     status=0
