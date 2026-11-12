@@ -126,11 +126,13 @@ run_x() {
   local timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
   echo "[$timestamp] Starting: $*" >> "$LOGFILE"
 
-  # Reset the volume on every launch so the timer alarm is always loud.
-  # Inside an app the volume keys (kidbox-volume.sh) can turn it down; that
-  # lasts until the next launch.
-  amixer -q sset Master 100% unmute 2>/dev/null || true
-  amixer -q sset PCM 100% unmute 2>/dev/null || true
+  # Reset the volume to 80% on every launch. Inside an app the volume keys
+  # (kidbox-volume.sh) can change it; that lasts until the next launch. The
+  # timer turns it up to 100% for its alarm (timer-countdown.sh).
+  # -M as in kidbox-volume.sh: without it a percentage below 100 comes out
+  # far quieter than it sounds like it should.
+  amixer -q -M sset Master 80% unmute 2>/dev/null || true
+  amixer -q -M sset PCM 80% unmute 2>/dev/null || true
 
   export KID_APP="$1"
   shift || true

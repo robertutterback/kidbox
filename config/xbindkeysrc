@@ -4,8 +4,9 @@
   control+alt + BackSpace
 
 # Volume. Media keys where the keyboard has them, Ctrl+Alt+arrows where it
-# does not. Every launch resets to 100% (see run_x in menu.sh), so these
-# only last for the current app.
+# does not. Every launch resets to 80% (see run_x in menu.sh), so these
+# only last for the current app. In DOS programs these keys are handled by
+# kidbox-quit-watch.py instead, since DOSBox keeps the keyboard to itself.
 "$HOME/bin/kidbox-volume.sh up"
   XF86AudioRaiseVolume
 "$HOME/bin/kidbox-volume.sh up"

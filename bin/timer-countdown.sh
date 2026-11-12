@@ -53,6 +53,11 @@ echo
 # Stop timer music
 kill $MUSIC_PID 2>/dev/null || true
 
+# The alarm is always at full volume, whatever the volume was during the
+# countdown (80% by default, see run_x in menu.sh).
+amixer -q sset Master 100% unmute 2>/dev/null || true
+amixer -q sset PCM 100% unmute 2>/dev/null || true
+
 # Play alarm sound (looping)
 ALARM_SOUND="$CONTENT_DIR/alarm.mp3"
 ALARM_PID=""
