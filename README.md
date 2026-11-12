@@ -351,9 +351,9 @@ need it.
 DOSBox settings are in `config/dosbox.conf`. A `config/dosbox-<folder>.conf`
 overrides them for one program: `dosbox-oregon-trail.conf` runs Oregon Trail
 in a 1440x900 window without 4:3 correction, because the correction makes its
-trail map tall and skinny. `dos.sh` centres a window that is smaller than the
-screen, and logs what it does with the window to `~/.kidbox-state/dos.log`
-in the kid's home.
+trail map tall and skinny. `dos.sh` centres that window, which matchbox
+would otherwise stretch to fill the screen, and logs what it does with the
+window to `~/.kidbox-state/dos.log` in the kid's home.
 
 ## Power Button Behavior
 

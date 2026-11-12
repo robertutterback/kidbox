@@ -21,7 +21,7 @@ set -euo pipefail
 #   keyboard, so xbindkeys, which handles it everywhere else, never sees it.
 # - setup_window gives DOSBox the keyboard once its window is up (without it
 #   the keyboard did nothing until the window was clicked) and centres the
-#   window if it is smaller than the screen.
+#   window of a program that runs in one.
 #
 # What setup_window sees and does is written to ~/.kidbox-state/dos.log,
 # replaced each time a program starts.
@@ -37,7 +37,12 @@ shift
 PRESETS="$HOME/kidbox/presets"
 confs=( -conf "$PRESETS/dosbox.conf" )
 override="$PRESETS/dosbox-$(basename "$dir").conf"
-[[ -f "$override" ]] && confs+=( -conf "$override" )
+WIN_SIZE=""  # "width height" if the override runs the program in a window
+if [[ -f "$override" ]]; then
+  confs+=( -conf "$override" )
+  WIN_SIZE="$(sed -n 's/^windowresolution=\([0-9]\+\)x\([0-9]\+\)$/\1 \2/p' \
+                "$override" | tail -n1)"
+fi
 
 # Our own window class, so the window can be found without guessing what
 # SDL calls it.
@@ -58,34 +63,31 @@ window_geometry() {
   echo "${X:-?} ${Y:-?} ${WIDTH:-?} ${HEIGHT:-?}"
 }
 
-# Moves a window smaller than the screen to the middle of it. matchbox
-# ignores a window's own request to be centred (SDL_VIDEO_CENTERED), so move
-# it from outside: first the window itself, and if matchbox ignores that
-# too, the frame matchbox has wrapped around it.
+# Puts a windowed program (one whose override sets windowresolution) in the
+# middle of the screen at that size. matchbox stretches every app window to
+# fill the screen -- the log showed DOSBox's 1440x900 window at 1920x1048 --
+# and DOSBox then draws in the top-left corner of it. So take the window
+# away from matchbox: an override-redirect window is one the window manager
+# leaves alone, and the setting takes effect when the window is next shown,
+# hence the unmap and map.
 center_window() {
-  local win="$1" sw sh x y w h tx ty frame
+  local win="$1" sw sh x y w h tw th tx ty
   read -r sw sh < <(xdotool getdisplaygeometry 2>>"$LOG")
   read -r x y w h < <(window_geometry "$win")
   log "screen ${sw}x${sh}; window $win at $x,$y, ${w}x${h}"
-  [[ "$w" =~ ^[0-9]+$ && "$h" =~ ^[0-9]+$ ]] || return
-  (( w < sw || h < sh )) || return
-  tx=$(( (sw - w) / 2 ))
-  ty=$(( (sh - h) / 2 ))
+  [[ -n "$WIN_SIZE" ]] || return
+  read -r tw th <<< "$WIN_SIZE"
+  tx=$(( (sw - tw) / 2 ))
+  ty=$(( (sh - th) / 2 ))
 
+  xdotool windowunmap --sync "$win" 2>>"$LOG"
+  xdotool set_window --overrideredirect 1 "$win" 2>>"$LOG"
+  xdotool windowmap --sync "$win" 2>>"$LOG"
+  xdotool windowsize "$win" "$tw" "$th" 2>>"$LOG"
   xdotool windowmove "$win" "$tx" "$ty" 2>>"$LOG"
   sleep 0.2
   read -r x y w h < <(window_geometry "$win")
-  log "moved the window to $tx,$ty; it is at $x,$y"
-  [[ "$x,$y" == "$tx,$ty" ]] && return
-
-  frame="$(xwininfo -tree -id "$win" 2>>"$LOG" \
-             | awk '/Parent window id:/ && !/root window/ { print $4 }')"
-  log "frame: ${frame:-none}"
-  [[ -n "$frame" ]] || return
-  xdotool windowmove "$frame" "$tx" "$ty" 2>>"$LOG"
-  sleep 0.2
-  read -r x y w h < <(window_geometry "$win")
-  log "moved the frame to $tx,$ty; the window is at $x,$y"
+  log "wanted ${tw}x${th} at $tx,$ty; window is ${w}x${h} at $x,$y"
 }
 
 # Centres and focuses each DOSBox window as it appears, for as long as
