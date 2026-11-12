@@ -88,18 +88,17 @@ center_window() {
   log "moved the frame to $tx,$ty; the window is at $x,$y"
 }
 
+# Centres and focuses each DOSBox window as it appears, for as long as
+# DOSBox runs. Windowed, DOSBox replaces its first window within a second
+# of starting (the log showed the one first found gone by the time it was
+# focused), and may replace it again when the game changes screen size, so
+# acting once on the first window found is not enough.
+# Usage: setup_window <dosbox-pid>
 setup_window() {
   # This runs in the background, where one failed step must not skip the
   # rest (set -e would end it at the first failure).
   set +e
-  local win
-  win="$(timeout 15 xdotool search --sync --onlyvisible --class "$WM_CLASS" \
-           2>>"$LOG" | head -n1)"
-  if [[ -z "$win" ]]; then
-    log "no DOSBox window found"
-    return
-  fi
-  log "found window $win"
+  local pid="$1" win last=""
   # In a limited session the time-left bar (kidbox-limit-bar.py, started by
   # .xinitrc) appears a second or so after DOSBox and takes the focus with
   # it, so focusing DOSBox before then does not stick. Wait for the bar.
@@ -107,12 +106,24 @@ setup_window() {
     timeout 15 xdotool search --sync --onlyvisible --name '^kidbox-limit-bar$' \
       >/dev/null 2>>"$LOG" || log "no time bar appeared"
   fi
-  # SDL may still be setting the window up when it first appears, and the
-  # bar may still be settling.
-  sleep 0.5
-  center_window "$win"
-  xdotool windowfocus "$win" 2>>"$LOG"
-  log "focused $win; focus is now on $(xdotool getwindowfocus 2>>"$LOG")"
+  while kill -0 "$pid" 2>/dev/null; do
+    win="$(xdotool search --onlyvisible --class "$WM_CLASS" 2>/dev/null \
+             | tail -n1)"
+    if [[ -n "$win" && "$win" != "$last" ]]; then
+      # SDL may still be setting the window up, or about to replace it.
+      sleep 0.5
+      if xdotool getwindowname "$win" >/dev/null 2>&1; then
+        log "found window $win"
+        center_window "$win"
+        xdotool windowfocus "$win" 2>>"$LOG"
+        log "focused $win; focus is now on $(xdotool getwindowfocus 2>>"$LOG")"
+        last="$win"
+      else
+        log "window $win went away before it could be set up"
+      fi
+    fi
+    sleep 0.5
+  done
 }
 
 # SDL_VIDEO_X11_DGAMOUSE=0: in fullscreen, SDL 1.2 reads the mouse through
@@ -129,9 +140,10 @@ dosbox_pid=$!
 "$HOME/bin/kidbox-quit-watch.py" "$dosbox_pid" &
 watch_pid=$!
 
-setup_window &
+setup_window "$dosbox_pid" &
+setup_pid=$!
 
 # DOSBox ends either on its own or because the watcher ended it; either way
 # the session is over.
 wait "$dosbox_pid" || true
-kill "$watch_pid" 2>/dev/null || true
+kill "$watch_pid" "$setup_pid" 2>/dev/null || true
