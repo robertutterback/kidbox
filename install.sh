@@ -71,6 +71,7 @@ APT_PACKAGES=(
   python3-evdev
   python3-tk
   xdotool
+  x11-utils
   dosbox
   curl
   unzip
@@ -251,6 +252,8 @@ fetch_dos_game() {
 }
 
 install -m 0644 "$REPO_ROOT/config/dosbox.conf" "$KIDBOX_DIR/presets/dosbox.conf"
+install -m 0644 "$REPO_ROOT/config/dosbox-oregon-trail.conf" \
+  "$KIDBOX_DIR/presets/dosbox-oregon-trail.conf"
 install -d -m 0755 "$KIDBOX_DIR/dos"
 for entry in "${DOS_GAMES[@]}"; do
   IFS='|' read -r folder url sha inner <<< "$entry"
